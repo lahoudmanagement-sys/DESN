@@ -4,7 +4,7 @@
 
 ## What's in here
 
-- `meteor-dynamics-chicxulub.html` — single-file pitch deck (HTML + CSS + JS + SVG, all inline)
+- `index.html` — single-file pitch deck (HTML + CSS + JS + SVG, all inline)
 - `hero-bg.png` — hero background image
 
 ## Run locally
@@ -13,8 +13,8 @@
 npx serve .
 ```
 
-Then open `http://localhost:3000/meteor-dynamics-chicxulub.html`.
+Then open `http://localhost:3000/`.
 
 ## Deploy
 
-This is a static site — drop the two files onto Vercel, Netlify, or GitHub Pages. For a clean URL, rename `meteor-dynamics-chicxulub.html` to `index.html`.
+This is a static site — drop the files onto Vercel, Netlify, or GitHub Pages.
