@@ -1,0 +1,2724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Meteor Dynamics — Chicxulub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0A0908;
+    --bg-lift: #141311;
+    --surface: #1C1B1A;
+    --fire: #E94F1D;
+    --fire-glow: #FF6A2B;
+    --amber: #F5B041;
+    --ice: #7BA7D9;
+    --text: #F8F4EF;
+    --text-muted: #8B847D;
+    --text-dim: #4A463F;
+    --border: rgba(248, 244, 239, 0.08);
+    --grid: rgba(248, 244, 239, 0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Unbounded', -apple-system, sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    cursor: default;
+  }
+
+  /* Grain texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; font-weight: 400; letter-spacing: 0.02em; }
+  .serif { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; }
+
+  /* ============ NAV ============ */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 22px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(180deg, rgba(10,9,8,0.8) 0%, rgba(10,9,8,0) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .brand {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-dot {
+    width: 6px; height: 6px;
+    background: var(--fire);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--fire);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  .nav-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    min-height: 125vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 40px;
+    overflow: hidden;
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(180deg,
+        rgba(10, 9, 8, 0.1) 0%,
+        rgba(10, 9, 8, 0.2) 55%,
+        rgba(10, 9, 8, 0.92) 100%),
+      linear-gradient(90deg,
+        rgba(10, 9, 8, 0.78) 0%,
+        rgba(10, 9, 8, 0.35) 40%,
+        rgba(10, 9, 8, 0.05) 65%,
+        rgba(10, 9, 8, 0.3) 100%),
+      url('hero-bg.png');
+    background-size: 100% 100%, 100% 100%, cover;
+    background-position: center, center, center 55%;
+    background-repeat: no-repeat;
+  }
+
+  .starfield {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle linear infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  .meteor {
+    position: absolute;
+    top: 10%;
+    right: -200px;
+    width: 300px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--fire-glow), var(--amber), white);
+    transform: rotate(-20deg);
+    animation: meteor-fly 6s ease-out infinite;
+    box-shadow: 0 0 20px var(--fire);
+    opacity: 0;
+  }
+
+  .meteor::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -4px;
+    width: 10px; height: 10px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 20px white, 0 0 40px var(--fire);
+  }
+
+  @keyframes meteor-fly {
+    0% { transform: rotate(-20deg) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { transform: rotate(-20deg) translateX(-140vw); opacity: 0; }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .hero-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--fire);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    opacity: 0;
+    animation: rise-in 1.2s ease-out 0.3s forwards;
+  }
+
+  .hero-kicker::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--fire);
+  }
+
+  .hero-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800;
+    font-size: clamp(60px, 11vw, 180px);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  .hero-title .line {
+    display: block;
+    overflow: hidden;
+  }
+
+  .hero-title .line span {
+    display: inline-block;
+    transform: translateY(110%);
+    animation: slide-up 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .hero-title .line:nth-child(1) span { animation-delay: 0.5s; }
+  .hero-title .line:nth-child(2) span {
+    animation-delay: 0.75s;
+    background: linear-gradient(180deg, var(--fire) 0%, var(--amber) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-style: italic;
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: -0.02em;
+  }
+
+  @keyframes slide-up {
+    to { transform: translateY(0); }
+  }
+
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-sub {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: clamp(22px, 2.6vw, 34px);
+    line-height: 1.3;
+    color: var(--text-muted);
+    max-width: 700px;
+    margin-bottom: 60px;
+    opacity: 0;
+    animation: rise-in 1.2s ease-out 1.2s forwards;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 80px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: rise-in 1.2s ease-out 1.5s forwards;
+  }
+
+  .hero-meta div span {
+    display: block;
+    color: var(--text);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    animation: rise-in 1.2s ease-out 2s forwards, bob 2.5s ease-in-out 3s infinite;
+  }
+
+  .scroll-cue::after {
+    content: '';
+    width: 1px; height: 40px;
+    background: linear-gradient(180deg, var(--text-muted), transparent);
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ============ GENERIC SECTION ============ */
+  section {
+    position: relative;
+    padding: 160px 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--fire);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--fire);
+  }
+
+  .section-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: clamp(40px, 6vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+  }
+
+  .section-title em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    text-transform: none;
+    background: linear-gradient(180deg, var(--fire), var(--amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ============ PROBLEM / $25B COUNTER ============ */
+  .problem {
+    text-align: center;
+    padding: 200px 40px;
+    position: relative;
+  }
+
+  .problem-lead {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: clamp(24px, 2.8vw, 38px);
+    color: var(--text-muted);
+    margin-bottom: 48px;
+  }
+
+  .big-number {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800;
+    font-size: clamp(44px, 8vw, 120px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    background: linear-gradient(180deg, var(--fire) 0%, #8B2A0E 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 24px;
+    text-shadow: 0 0 60px rgba(233, 79, 29, 0.3);
+  }
+
+  .big-number-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 80px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-top: 80px;
+  }
+
+  .stat {
+    background: var(--bg);
+    padding: 60px 40px;
+    text-align: left;
+    transition: background 0.4s ease;
+    cursor: pointer;
+  }
+
+  .stat:hover {
+    background: var(--bg-lift);
+  }
+
+  .stat-num {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: clamp(44px, 5vw, 80px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    background: linear-gradient(180deg, var(--text) 0%, var(--text-muted) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background 0.4s ease;
+  }
+
+  .stat:hover .stat-num {
+    background: linear-gradient(180deg, var(--fire) 0%, var(--amber) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .stat-desc {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.4;
+    color: var(--text-muted);
+  }
+
+  .source-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 32px;
+  }
+
+  /* ============ WING COMPARE ============ */
+  .wing-section {
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-lift) 50%, var(--bg) 100%);
+  }
+
+  .wing-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    margin-top: 80px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .wing-panel {
+    background: var(--bg);
+    padding: 60px 50px;
+    position: relative;
+    min-height: 500px;
+  }
+
+  .wing-panel.highlight {
+    background: linear-gradient(180deg, rgba(233, 79, 29, 0.05) 0%, rgba(10, 9, 8, 1) 100%);
+  }
+
+  .wing-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .wing-panel:first-child .wing-label { color: var(--text-muted); }
+  .wing-panel.highlight .wing-label { color: var(--fire); }
+
+  .wing-label::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: currentColor;
+    border-radius: 50%;
+  }
+
+  .wing-name {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: clamp(28px, 3vw, 44px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .wing-panel.highlight .wing-name {
+    background: linear-gradient(90deg, var(--fire), var(--amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .wing-svg {
+    width: 100%;
+    height: 160px;
+    margin: 30px 0;
+    overflow: visible;
+  }
+
+  .wing-desc {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin-top: 30px;
+  }
+
+  .wing-stats {
+    display: flex;
+    gap: 40px;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+  }
+
+  .wing-stat {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .wing-stat-val {
+    font-size: 28px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .wing-panel.highlight .wing-stat-val {
+    color: var(--fire);
+  }
+
+  .wing-stat-lbl {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* SVG animation stroke */
+  @keyframes draw-flow {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ============ IMPACT REVEAL ============ */
+  .reveal {
+    position: relative;
+    padding: 200px 40px;
+    text-align: center;
+    background: radial-gradient(ellipse at center, #2a0e05 0%, var(--bg) 60%);
+    overflow: hidden;
+  }
+
+  .crater {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    border: 1px solid rgba(233, 79, 29, 0.2);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .crater.active {
+    animation: crater-pulse 3s ease-out infinite;
+  }
+
+  .crater:nth-child(2) { width: 800px; height: 800px; animation-delay: 0.5s; }
+  .crater:nth-child(3) { width: 1000px; height: 1000px; animation-delay: 1s; }
+
+  @keyframes crater-pulse {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.6; border-color: rgba(233, 79, 29, 0.6); }
+    100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+  }
+
+  .chicx-name {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800;
+    font-size: clamp(70px, 13vw, 220px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, var(--fire) 0%, var(--amber) 50%, #8B2A0E 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 80px rgba(233, 79, 29, 0.4);
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .pronounce {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .pronounce span {
+    color: var(--fire);
+  }
+
+  .reveal-copy {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: clamp(24px, 2.6vw, 36px);
+    line-height: 1.4;
+    color: var(--text);
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .reveal-copy em {
+    color: var(--fire);
+    font-weight: 500;
+  }
+
+  /* ============ ARCHITECTURE ============ */
+  .arch {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 80px;
+    align-items: center;
+    margin-top: 80px;
+  }
+
+  .arch-visual {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--bg-lift);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .arch-visual svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .axle {
+    fill: var(--fire);
+    animation: axle-rotate 4s linear infinite;
+    transform-origin: center;
+  }
+
+  @keyframes axle-rotate {
+    to { transform: rotate(360deg); }
+  }
+
+  .spine-line {
+    fill: none;
+    stroke: var(--ice);
+    stroke-width: 2;
+    stroke-linecap: round;
+    animation: spine-flex 4s ease-in-out infinite;
+  }
+
+  @keyframes spine-flex {
+    0%, 100% { d: path('M 32 150 Q 150 145 278 162'); }
+    50% { d: path('M 32 150 Q 150 108 278 152'); }
+  }
+
+  .arch-features {
+    display: grid;
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .arch-feature {
+    background: var(--bg);
+    padding: 40px;
+    transition: background 0.3s ease;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .arch-feature:hover {
+    background: var(--bg-lift);
+  }
+
+  .arch-feature::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--fire);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.4s ease;
+  }
+
+  .arch-feature:hover::before {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+
+  .arch-feature-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--fire);
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+  }
+
+  .arch-feature-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .arch-feature-desc {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  /* ============ PERFORMANCE DATA ============ */
+  .perf-section {
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-lift) 50%, var(--bg) 100%);
+  }
+
+  .perf-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    margin: 50px 0 20px;
+  }
+  .perf-intro-card {
+    background: var(--bg);
+    padding: 32px 36px;
+    border-top: 2px solid var(--amber);
+    position: relative;
+  }
+  .perf-intro-card:nth-child(2) { border-top-color: var(--fire); }
+  .perf-intro-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .perf-intro-card:nth-child(2) .perf-intro-num { color: var(--fire); }
+  .perf-intro-card h3 {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+  .perf-intro-card p {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .perf-block {
+    margin-top: 80px;
+    padding-top: 60px;
+    border-top: 1px solid var(--border);
+  }
+  .perf-block:first-of-type {
+    margin-top: 40px;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .perf-block-header {
+    margin-bottom: 36px;
+  }
+  .perf-block-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    padding: 6px 12px;
+    border: 1px solid var(--amber);
+    border-radius: 2px;
+  }
+  .perf-block-tag.alt {
+    color: var(--fire);
+    border-color: var(--fire);
+  }
+  .perf-block-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: clamp(28px, 3vw, 42px);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .perf-block-title em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    text-transform: none;
+    background: linear-gradient(180deg, var(--fire), var(--amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .perf-block-desc {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin: 0;
+  }
+
+  .chart-callout {
+    background: linear-gradient(90deg, rgba(233, 79, 29, 0.08) 0%, transparent 100%);
+    border-left: 3px solid var(--fire);
+    padding: 20px 26px;
+    margin-top: 18px;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .chart-callout b {
+    color: var(--fire);
+    font-family: 'Unbounded', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  @media (max-width: 900px) {
+    .perf-intro { grid-template-columns: 1fr; }
+    .perf-block { padding-top: 40px; margin-top: 40px; }
+  }
+
+  .chart-legend {
+    display: flex;
+    gap: 40px;
+    margin: 40px 0 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+  .chart-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .chart-legend i {
+    width: 28px; height: 3px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .chart-legend i.dashed {
+    background: none !important;
+    border-top: 3px dashed;
+    height: 0;
+  }
+
+  .chart-tabs {
+    display: inline-flex;
+    gap: 2px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+  .chart-tabs button {
+    padding: 10px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .chart-tabs button:hover { color: var(--text); }
+  .chart-tabs button.active {
+    background: var(--fire);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  .chart-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 28px 18px;
+    position: relative;
+    margin-bottom: 18px;
+  }
+  .chart-wrap svg { width: 100%; height: auto; display: block; }
+  .chart-label {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+  .chart-tooltip {
+    position: absolute;
+    background: var(--bg-lift);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+    z-index: 5;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .chart-tooltip.visible { opacity: 1; }
+  .chart-tooltip .t-angle {
+    color: var(--fire);
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: 0.1em;
+  }
+  .chart-tooltip .t-row { margin-top: 3px; letter-spacing: 0.08em; }
+  .chart-tooltip .t-row b { color: var(--text); font-weight: 500; }
+
+  .chart-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .chart-stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--fire);
+    border-radius: 6px;
+    padding: 18px 22px;
+  }
+  .chart-stat.orig { border-left-color: #7BA7D9; }
+  .chart-stat.ratio { border-left-color: var(--amber); }
+  .chart-stat .s-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .chart-stat .s-val {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--fire);
+    letter-spacing: -0.02em;
+  }
+  .chart-stat.orig .s-val { color: #7BA7D9; }
+  .chart-stat.ratio .s-val {
+    background: linear-gradient(90deg, var(--amber), var(--fire));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .chart-table {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    overflow-x: auto;
+  }
+  .chart-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .chart-table th, .chart-table td {
+    padding: 10px 14px;
+    text-align: right;
+  }
+  .chart-table thead th {
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .chart-table thead tr:first-child th.orig-head { color: #7BA7D9; border-bottom: 2px solid #7BA7D9; text-align: center; }
+  .chart-table thead tr:first-child th.curve-head { color: var(--fire); border-bottom: 2px solid var(--fire); text-align: center; }
+  .chart-table thead tr:nth-child(2) th { font-weight: 400; color: var(--text-dim); font-size: 10px; letter-spacing: 0.1em; }
+  .chart-table td { color: var(--text-muted); }
+  .chart-table tbody tr:nth-child(even) { background: rgba(255,255,255,0.015); }
+  .chart-table tr.zero { background: rgba(233, 79, 29, 0.08) !important; }
+  .chart-table tr.zero td { color: var(--text); }
+  .chart-table tr.zero td:first-child { color: var(--fire); font-weight: 700; }
+  .chart-table .sep { border-right: 1px solid var(--border); }
+
+  @media (max-width: 900px) {
+    .chart-stats { grid-template-columns: 1fr; }
+    .chart-wrap { padding: 18px 10px 10px; }
+    .chart-tabs button { padding: 8px 14px; font-size: 10px; }
+  }
+
+  /* ============ QR BADGE ============ */
+  .qr-badge {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    background: rgba(28, 27, 26, 0.88);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .qr-badge:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.65);
+  }
+
+  .qr-code {
+    width: 92px; height: 92px;
+    background: white;
+    border-radius: 6px;
+    padding: 5px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-code img {
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  .qr-meta { max-width: 150px; }
+  .qr-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--fire);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .qr-kicker::before {
+    content: '';
+    width: 18px; height: 1px;
+    background: var(--fire);
+  }
+  .qr-label {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .qr-sub {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ============ IMPACT GRID ============ */
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    background: var(--border);
+    margin-top: 80px;
+  }
+
+  .impact-card {
+    background: var(--bg);
+    padding: 60px 50px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.5s ease;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .impact-card:hover {
+    background: var(--bg-lift);
+  }
+
+  .impact-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle at top right, rgba(233, 79, 29, 0.15), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .impact-card:hover::after {
+    opacity: 1;
+  }
+
+  .impact-icon {
+    width: 60px; height: 60px;
+    border: 1px solid var(--fire);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    transition: all 0.4s ease;
+  }
+
+  .impact-card:hover .impact-icon {
+    background: var(--fire);
+    transform: rotate(45deg);
+  }
+
+  .impact-icon svg {
+    width: 24px; height: 24px;
+    stroke: var(--fire);
+    fill: none;
+    stroke-width: 1.5;
+    transition: stroke 0.4s ease;
+  }
+
+  .impact-card:hover .impact-icon svg {
+    stroke: var(--bg);
+  }
+
+  .impact-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: clamp(24px, 2.4vw, 34px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .impact-desc {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  /* ============ CLOSER ============ */
+  .closer {
+    padding: 220px 40px;
+    text-align: center;
+    background: linear-gradient(180deg, var(--bg) 0%, #1a0805 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .closer::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 120%; height: 400px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse, rgba(233, 79, 29, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .closer-quote {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(44px, 6vw, 96px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    max-width: 1100px;
+    margin: 0 auto 80px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .closer-quote em {
+    background: linear-gradient(90deg, var(--fire), var(--amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-style: italic;
+  }
+
+  .closer-brand {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800;
+    font-size: clamp(32px, 4vw, 56px);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 20px;
+  }
+
+  .closer-brand span {
+    color: var(--fire);
+  }
+
+  .closer-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+  }
+
+  footer {
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ============ SCROLL REVEAL ============ */
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-on-scroll.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Side progress indicator */
+  .progress {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: transform 0.25s ease;
+  }
+  .progress:hover {
+    transform: translateY(-50%) translateX(-4px);
+  }
+  .progress::before {
+    content: 'MENU';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%) translateX(-8px);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .progress:hover::before { opacity: 1; }
+
+  .progress-dot {
+    width: 24px;
+    height: 2px;
+    background: var(--text-dim);
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+
+  .progress-dot.active {
+    width: 40px;
+    background: var(--fire);
+  }
+
+  /* ============ NAV MODAL ============ */
+  .nav-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .nav-modal[hidden] { display: none !important; }
+  .nav-modal.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .nav-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 9, 8, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .nav-modal-box {
+    position: relative;
+    background: var(--bg-lift);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 44px 52px 36px;
+    min-width: 460px;
+    max-width: 92vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(24px) scale(0.96);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+  }
+  .nav-modal.visible .nav-modal-box {
+    transform: translateY(0) scale(1);
+  }
+
+  .nav-modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-modal-close:hover {
+    color: var(--fire);
+    background: rgba(233, 79, 29, 0.08);
+  }
+
+  .nav-modal-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--fire);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-modal-kicker::before {
+    content: '';
+    width: 32px; height: 1px;
+    background: var(--fire);
+  }
+
+  .nav-modal-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    line-height: 1;
+  }
+
+  .nav-modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .nav-modal-list li {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 16px 18px;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s ease, padding-left 0.25s ease;
+    position: relative;
+  }
+  .nav-modal-list li:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-modal-list li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10%; bottom: 10%;
+    width: 2px;
+    background: var(--fire);
+    transform: scaleY(0);
+    transition: transform 0.25s ease;
+  }
+  .nav-modal-list li:hover {
+    background: var(--bg);
+    padding-left: 26px;
+  }
+  .nav-modal-list li:hover::before { transform: scaleY(1); }
+  .nav-modal-list li.active {
+    background: rgba(233, 79, 29, 0.06);
+  }
+  .nav-modal-list li.active::before { transform: scaleY(1); }
+  .nav-modal-list li.active .nav-num { color: var(--fire); }
+  .nav-modal-list li.active .nav-label { color: var(--fire); }
+
+  .nav-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    min-width: 28px;
+    transition: color 0.25s ease;
+  }
+  .nav-label {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    text-transform: uppercase;
+    transition: color 0.25s ease;
+  }
+  .nav-sublabel {
+    margin-left: auto;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 600px) {
+    .nav-modal-box { min-width: auto; padding: 36px 28px 28px; }
+    .nav-modal-title { font-size: 24px; }
+    .nav-label { font-size: 15px; }
+    .nav-sublabel { display: none; }
+  }
+
+  /* iPad landscape optimization */
+  @media (max-width: 1366px) {
+    section { padding: 120px 40px; }
+    .hero { padding: 0 40px; }
+  }
+
+  @media (max-width: 900px) {
+    .wing-compare, .arch, .impact-grid, .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    .arch { gap: 40px; }
+    .hero-meta { flex-direction: column; gap: 20px; }
+    nav { padding: 16px 20px; }
+    section { padding: 100px 24px; }
+    .progress { display: none; }
+  }
+
+  /* ============ MOBILE (iPhone-class) ============ */
+  @media (max-width: 600px) {
+    nav {
+      padding: 14px 18px;
+      gap: 12px;
+    }
+    .brand { font-size: 10px; letter-spacing: 0.14em; gap: 8px; }
+    .nav-meta { font-size: 9px; letter-spacing: 0.1em; text-align: right; }
+
+    /* Hero — smaller title, full-width padding, compact meta */
+    .hero { padding: 0 20px; min-height: 110vh; }
+    .hero-kicker { font-size: 10px; letter-spacing: 0.25em; }
+    .hero-kicker::before { width: 24px; }
+    .hero-title { font-size: clamp(34px, 11vw, 54px); line-height: 0.95; letter-spacing: -0.03em; }
+    .hero-sub { font-size: 18px; margin-bottom: 40px; }
+    .hero-meta { gap: 18px; }
+    .hero-meta div span { font-size: 12px; }
+
+    /* Section heading */
+    .section-title { font-size: clamp(32px, 10vw, 56px); }
+
+    /* Problem */
+    .problem { padding: 100px 20px; overflow-x: hidden; }
+    .big-number { font-size: clamp(24px, 7vw, 72px); letter-spacing: -0.02em; }
+    .big-number-label { font-size: 10px; letter-spacing: 0.15em; }
+    .problem-lead { font-size: 20px; }
+    .stat { padding: 36px 24px; }
+    .source-note { font-size: 9px; letter-spacing: 0.08em; }
+
+    /* Wings compare */
+    .wing-panel { padding: 36px 22px; min-height: auto; min-width: 0; }
+    .wing-panel > * { min-width: 0; }
+    .wing-name { font-size: clamp(22px, 6vw, 32px); }
+    .wing-stats { flex-wrap: wrap; gap: 18px 28px; }
+    .wing-stat-val { font-size: 22px; }
+    .wing-desc { font-size: 16px; }
+
+    /* Chicxulub reveal */
+    .reveal { padding: 140px 20px; }
+    .chicx-name { font-size: clamp(36px, 11vw, 88px); letter-spacing: -0.03em; }
+    .pronounce { font-size: 11px; letter-spacing: 0.1em; }
+    .reveal-copy { font-size: 20px; }
+
+    /* Architecture */
+    .arch-visual { padding: 24px; }
+    .arch-feature { padding: 28px 22px; }
+    .arch-feature-title { font-size: 19px; }
+
+    /* Performance */
+    .perf-intro-card { padding: 28px 24px; }
+    .perf-intro-card h3 { font-size: 19px; }
+    .perf-block { padding-top: 40px; margin-top: 40px; }
+    .perf-block-title { font-size: clamp(24px, 7vw, 36px); }
+    .perf-block-desc { font-size: 16px; }
+    .chart-legend { gap: 20px; }
+    .chart-tabs button { padding: 8px 14px; font-size: 10px; letter-spacing: 0.15em; }
+    .chart-wrap { padding: 14px 6px 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .chart-wrap svg { min-width: 560px; }
+    .chart-tooltip { font-size: 10px; padding: 8px 10px; }
+    .chart-callout { font-size: 15px; padding: 16px 18px; }
+    .chart-stat { padding: 14px 16px; }
+    .chart-stat .s-val { font-size: 20px; }
+    .chart-table { font-size: 11px; }
+    .chart-table th, .chart-table td { padding: 8px 10px; }
+
+    /* Impact */
+    .impact-card { padding: 40px 28px; min-height: auto; }
+    .impact-title { font-size: clamp(22px, 6vw, 30px); }
+    .impact-desc { font-size: 16px; }
+
+    /* Closer */
+    .closer { padding: 140px 20px; }
+    .closer-quote { font-size: clamp(30px, 9vw, 56px); margin-bottom: 60px; }
+    .closer-brand { font-size: clamp(22px, 7vw, 38px); letter-spacing: 0; }
+
+    /* Footer */
+    footer {
+      padding: 24px 20px;
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+
+    /* QR — hide on phones since the visitor is already on one */
+    .qr-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <div class="brand">
+    <div class="brand-dot"></div>
+    METEOR&nbsp;DYNAMICS
+  </div>
+  <div class="nav-meta">PRT—001 / CHICXULUB</div>
+</nav>
+
+<!-- ===== PROGRESS ===== -->
+<div class="progress">
+  <div class="progress-dot" data-target="#hero"></div>
+  <div class="progress-dot" data-target="#problem"></div>
+  <div class="progress-dot" data-target="#wings"></div>
+  <div class="progress-dot" data-target="#reveal"></div>
+  <div class="progress-dot" data-target="#architecture"></div>
+  <div class="progress-dot" data-target="#performance"></div>
+  <div class="progress-dot" data-target="#impact"></div>
+  <div class="progress-dot" data-target="#closer"></div>
+</div>
+
+<!-- ===== NAV MODAL ===== -->
+<div class="nav-modal" id="navModal" hidden>
+  <div class="nav-modal-backdrop"></div>
+  <div class="nav-modal-box" role="dialog" aria-labelledby="navModalTitle">
+    <button class="nav-modal-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M6 6 L18 18 M18 6 L6 18"/>
+      </svg>
+    </button>
+    <div class="nav-modal-kicker">NAVIGATE</div>
+    <div class="nav-modal-title" id="navModalTitle">Contents</div>
+    <ul class="nav-modal-list">
+      <li data-target="#hero"><span class="nav-num">00</span><span class="nav-label">Introduction</span><span class="nav-sublabel">Chicxulub has landed</span></li>
+      <li data-target="#problem"><span class="nav-num">01</span><span class="nav-label">The Problem</span><span class="nav-sublabel">$25B burned annually</span></li>
+      <li data-target="#wings"><span class="nav-num">02</span><span class="nav-label">Wing Comparison</span><span class="nav-sublabel">Conventional vs. Chicxulub</span></li>
+      <li data-target="#reveal"><span class="nav-num">03</span><span class="nav-label">Chicxulub</span><span class="nav-sublabel">Why the name</span></li>
+      <li data-target="#architecture"><span class="nav-num">04</span><span class="nav-label">Architecture</span><span class="nav-sublabel">Hybrid axle + spine</span></li>
+      <li data-target="#performance"><span class="nav-num">05</span><span class="nav-label">Performance Data</span><span class="nav-sublabel">Wind tunnel + curve-fit</span></li>
+      <li data-target="#impact"><span class="nav-num">06</span><span class="nav-label">Real-World Impact</span><span class="nav-sublabel">Beyond aerodynamics</span></li>
+      <li data-target="#closer"><span class="nav-num">07</span><span class="nav-label">Closer</span><span class="nav-sublabel">The end of rigid flight</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== QR BADGE ===== -->
+<div class="qr-badge" id="qrBadge" title="Scan to open this page on your phone">
+  <div class="qr-code" id="qrCode"></div>
+  <div class="qr-meta">
+    <div class="qr-kicker">SCAN</div>
+    <div class="qr-label">View on your phone</div>
+    <div class="qr-sub">Take it with you.</div>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="hero">
+  <div class="starfield" id="starfield"></div>
+  <div class="meteor"></div>
+
+  <div class="hero-content">
+    <div class="hero-kicker">THE WING THAT ENDS AN ERA</div>
+
+    <h1 class="hero-title">
+      <span class="line"><span>CHICXULUB</span></span>
+      <span class="line"><span>has landed.</span></span>
+    </h1>
+
+    <p class="hero-sub">
+      A morphing wing engineered to make rigid, wasteful flight extinct — and save the aviation industry 25&nbsp;billion dollars a year.
+    </p>
+
+    <div class="hero-meta">
+      <div class="mono">STATUS<span>IN&nbsp;DEVELOPMENT</span></div>
+      <div class="mono">ORIGIN<span>SYDNEY,&nbsp;AU</span></div>
+      <div class="mono">TARGET<span>COMMERCIAL&nbsp;AVIATION</span></div>
+    </div>
+  </div>
+
+  <div class="scroll-cue">SCROLL</div>
+</section>
+
+<!-- ===== PROBLEM ===== -->
+<section class="problem" id="problem">
+  <div class="eyebrow reveal-on-scroll" style="justify-content:center;">THE PROBLEM</div>
+  <h2 class="section-title reveal-on-scroll">Every year, aviation burns <em>through—</em></h2>
+  <p class="problem-lead reveal-on-scroll">fuel that never needed to be spent.</p>
+
+  <div class="big-number reveal-on-scroll" id="bigCounter">$0</div>
+  <div class="big-number-label reveal-on-scroll">wasted annually. every year. forever — until now.</div>
+
+  <div class="stats-grid reveal-on-scroll">
+    <div class="stat">
+      <div class="stat-num" data-target="100000" data-prefix="" data-suffix="">0</div>
+      <div class="stat-label">FLIGHTS / DAY</div>
+      <div class="stat-desc">Every one of them a compromise — wings tuned for cruising, forced to take off and land.</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-target="250" data-prefix="$" data-suffix="B">0</div>
+      <div class="stat-label">GLOBAL FUEL SPEND / YEAR</div>
+      <div class="stat-desc">The annual jet fuel bill for commercial aviation, according to IATA.</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-target="10" data-prefix="" data-suffix="%">0</div>
+      <div class="stat-label">BURNED ON DRAG ALONE</div>
+      <div class="stat-desc">NASA research on laminar-flow wings shows up to a tenth of all fuel is wasted fighting air.</div>
+    </div>
+  </div>
+
+  <div class="source-note reveal-on-scroll">SOURCES / IATA&nbsp;2025 INDUSTRY OUTLOOK · NASA&nbsp;CATNLF STUDY 2014—2017</div>
+</section>
+
+<!-- ===== WING COMPARE ===== -->
+<section class="wing-section" id="wings">
+  <div class="eyebrow reveal-on-scroll">CONVENTIONAL VS. CHICXULUB</div>
+  <h2 class="section-title reveal-on-scroll">Two wings. One <em>winner.</em></h2>
+  <p class="hero-sub reveal-on-scroll" style="margin-top:0;">Unlike every other morphing wing pitch you'll see today, we tested ours against a conventional wing — and proved it.</p>
+
+  <div class="wing-compare reveal-on-scroll">
+    <!-- Conventional -->
+    <div class="wing-panel">
+      <div class="wing-label">LEGACY — 1930s DESIGN</div>
+      <div class="wing-name">Conventional Wing</div>
+
+      <svg class="wing-svg" viewBox="0 0 400 160" preserveAspectRatio="none">
+        <!-- Wing body -->
+        <path d="M 20 80 Q 140 70 260 85 L 280 100 L 300 100 L 320 110 Q 180 115 20 95 Z" fill="#2a2725" stroke="#4A463F" stroke-width="1"/>
+        <!-- Flap (deployed) -->
+        <path d="M 260 85 L 320 110 L 360 140 L 300 128 L 280 100 Z" fill="#E94F1D" fill-opacity="0.3" stroke="#E94F1D" stroke-width="1.5"/>
+        <!-- Turbulent airflow -->
+        <path class="flow-bad" d="M 0 40 Q 80 40 160 55 T 340 130 Q 360 138 370 150" fill="none" stroke="#E94F1D" stroke-width="1" stroke-dasharray="3,4" opacity="0.8">
+          <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="0.6s" repeatCount="indefinite"/>
+        </path>
+        <path class="flow-bad" d="M 0 55 Q 80 55 160 70 T 320 140 Q 340 148 360 155" fill="none" stroke="#E94F1D" stroke-width="1" stroke-dasharray="3,4" opacity="0.5">
+          <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="0.8s" repeatCount="indefinite"/>
+        </path>
+        <!-- Turbulence swirls -->
+        <circle cx="340" cy="145" r="4" fill="none" stroke="#E94F1D" stroke-width="1" opacity="0.6">
+          <animate attributeName="r" values="2;8;2" dur="1s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0;0.8" dur="1s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="350" cy="135" r="3" fill="none" stroke="#E94F1D" stroke-width="1" opacity="0.5">
+          <animate attributeName="r" values="2;6;2" dur="1.3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.6;0;0.6" dur="1.3s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+
+      <div class="wing-desc">Flaps — mechanical add-ons — physically break the wing's surface. Turbulent air. Massive drag. Every takeoff, every landing, forever.</div>
+
+      <div class="wing-stats">
+        <div class="wing-stat">
+          <div class="wing-stat-val">HIGH</div>
+          <div class="wing-stat-lbl">DRAG</div>
+        </div>
+        <div class="wing-stat">
+          <div class="wing-stat-val">10%</div>
+          <div class="wing-stat-lbl">FUEL WASTED</div>
+        </div>
+        <div class="wing-stat">
+          <div class="wing-stat-val">LOUD</div>
+          <div class="wing-stat-lbl">NOISE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chicxulub -->
+    <div class="wing-panel highlight">
+      <div class="wing-label">METEOR DYNAMICS — 2026</div>
+      <div class="wing-name">Chicxulub</div>
+
+      <svg class="wing-svg" viewBox="0 0 400 160" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="wingGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2a2725"/>
+            <stop offset="100%" stop-color="#1a0805"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Airfoil outline (slender, CAD-accurate) -->
+        <path d="M 20 90 Q 24 58 75 50 Q 170 43 260 58 Q 340 74 385 95 L 385 97 Q 290 112 130 112 Q 48 108 20 90 Z"
+              fill="url(#wingGrad)" stroke="#E94F1D" stroke-width="1.5"/>
+
+        <!-- Leading-edge attachment pin -->
+        <circle cx="36" cy="92" r="1.6" fill="none" stroke="#7BA7D9" stroke-width="0.8" opacity="0.7"/>
+
+        <!-- Main structural spar box -->
+        <rect x="48" y="66" width="72" height="38" rx="2" fill="none" stroke="#7BA7D9" stroke-width="1.2" opacity="0.85"/>
+        <rect x="56" y="72" width="58" height="26" rx="1.5" fill="#7BA7D9" fill-opacity="0.04" stroke="#7BA7D9" stroke-width="0.7" opacity="0.55"/>
+
+        <!-- Pivot bracket between spar and spine -->
+        <path d="M 121 90 Q 128 90 130 85 L 135 85 L 135 96 L 130 96 Q 128 91 121 91 Z" fill="none" stroke="#7BA7D9" stroke-width="0.9" opacity="0.7"/>
+        <circle cx="128" cy="100" r="1.8" fill="none" stroke="#E94F1D" stroke-width="0.9"/>
+
+        <!-- Zigzag flexible spine (bellows) -->
+        <path d="M 138 90 L 144 72 L 152 108 L 160 72 L 168 108 L 176 90"
+              fill="none" stroke="#F5B041" stroke-width="1.6" opacity="0.9" stroke-linejoin="round"/>
+
+        <!-- Axle 1 (largest) -->
+        <circle cx="200" cy="84" r="16" fill="none" stroke="#7BA7D9" stroke-width="1.1" opacity="0.7"/>
+        <circle cx="200" cy="84" r="12.5" fill="#F5B041" fill-opacity="0.08" stroke="#F5B041" stroke-width="1.3"/>
+        <rect x="187" y="83.2" width="26" height="1.8" fill="#E94F1D" opacity="0.9"/>
+        <circle cx="200" cy="84" r="2" fill="#F5B041"/>
+
+        <!-- Truss between 1 and 2 -->
+        <path d="M 220 79 L 232 77 L 232 95 Z" fill="none" stroke="#7BA7D9" stroke-width="0.8" opacity="0.45"/>
+
+        <!-- Axle 2 -->
+        <circle cx="250" cy="88" r="12" fill="none" stroke="#7BA7D9" stroke-width="1" opacity="0.7"/>
+        <circle cx="250" cy="88" r="9.3" fill="#F5B041" fill-opacity="0.08" stroke="#F5B041" stroke-width="1.2"/>
+        <rect x="240" y="87.3" width="20" height="1.6" fill="#E94F1D" opacity="0.9"/>
+        <circle cx="250" cy="88" r="1.6" fill="#F5B041"/>
+
+        <!-- Truss between 2 and 3 -->
+        <path d="M 265 86 L 276 84 L 276 98 Z" fill="none" stroke="#7BA7D9" stroke-width="0.7" opacity="0.4"/>
+
+        <!-- Axle 3 -->
+        <circle cx="292" cy="92" r="8" fill="none" stroke="#7BA7D9" stroke-width="0.9" opacity="0.7"/>
+        <circle cx="292" cy="92" r="6" fill="#F5B041" fill-opacity="0.08" stroke="#F5B041" stroke-width="1"/>
+        <rect x="285" y="91.4" width="14" height="1.3" fill="#E94F1D" opacity="0.9"/>
+        <circle cx="292" cy="92" r="1.2" fill="#F5B041"/>
+
+        <!-- Truss between 3 and 4 -->
+        <path d="M 302 92 L 312 90 L 312 99 Z" fill="none" stroke="#7BA7D9" stroke-width="0.6" opacity="0.4"/>
+
+        <!-- Axle 4 (smallest) -->
+        <circle cx="324" cy="95" r="5" fill="none" stroke="#7BA7D9" stroke-width="0.8" opacity="0.7"/>
+        <circle cx="324" cy="95" r="3.5" fill="#F5B041" fill-opacity="0.08" stroke="#F5B041" stroke-width="0.9"/>
+        <rect x="319" y="94.5" width="10" height="1.1" fill="#E94F1D" opacity="0.9"/>
+        <circle cx="324" cy="95" r="0.9" fill="#F5B041"/>
+
+        <!-- Trailing edge tip pin -->
+        <circle cx="379" cy="96" r="1" fill="none" stroke="#7BA7D9" stroke-width="0.7" opacity="0.6"/>
+
+        <!-- Laminar flow lines -->
+        <path d="M 0 40 Q 100 35 200 45 T 390 80" fill="none" stroke="#F5B041" stroke-width="1" opacity="0.8">
+          <animate attributeName="d" values="M 0 40 Q 100 35 200 45 T 390 80; M 0 42 Q 100 37 200 47 T 390 82; M 0 40 Q 100 35 200 45 T 390 80" dur="3s" repeatCount="indefinite"/>
+        </path>
+        <path d="M 0 55 Q 100 52 200 62 T 390 105" fill="none" stroke="#F5B041" stroke-width="1" opacity="0.6">
+          <animate attributeName="d" values="M 0 55 Q 100 52 200 62 T 390 105; M 0 57 Q 100 54 200 64 T 390 107; M 0 55 Q 100 52 200 62 T 390 105" dur="3.5s" repeatCount="indefinite"/>
+        </path>
+        <path d="M 0 130 Q 100 128 200 125 T 390 135" fill="none" stroke="#F5B041" stroke-width="1" opacity="0.5">
+          <animate attributeName="d" values="M 0 130 Q 100 128 200 125 T 390 135; M 0 132 Q 100 130 200 127 T 390 137; M 0 130 Q 100 128 200 125 T 390 135" dur="4s" repeatCount="indefinite"/>
+        </path>
+      </svg>
+
+      <div class="wing-desc">One seamless, morphing surface. No flaps. No discontinuities. Clean laminar flow from leading edge to trailing edge — in every flight phase.</div>
+
+      <div class="wing-stats">
+        <div class="wing-stat">
+          <div class="wing-stat-val">LOW</div>
+          <div class="wing-stat-lbl">DRAG</div>
+        </div>
+        <div class="wing-stat">
+          <div class="wing-stat-val">↑ L/D</div>
+          <div class="wing-stat-lbl">EFFICIENCY</div>
+        </div>
+        <div class="wing-stat">
+          <div class="wing-stat-val">QUIET</div>
+          <div class="wing-stat-lbl">TAKEOFF</div>
+        </div>
+        <div class="wing-stat">
+          <div class="wing-stat-val">↓ 10%</div>
+          <div class="wing-stat-lbl">FUEL USE</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CHICXULUB REVEAL ===== -->
+<section class="reveal" id="reveal">
+  <div class="crater"></div>
+  <div class="crater"></div>
+  <div class="crater"></div>
+
+  <div class="eyebrow reveal-on-scroll" style="justify-content:center;">INTRODUCING</div>
+
+  <h2 class="chicx-name reveal-on-scroll">CHICXULUB</h2>
+  <div class="pronounce reveal-on-scroll"><span>/CHEEK–shoo–loob/</span> &nbsp;·&nbsp; N. &nbsp;·&nbsp; THE METEOR THAT ENDED THE DINOSAURS</div>
+
+  <p class="reveal-copy reveal-on-scroll">
+    66 million years ago, a meteor struck the Yucatán and made the dominant species of its era <em>extinct.</em> We named our wing after it — because we're doing the same thing to rigid aviation.
+  </p>
+</section>
+
+<!-- ===== ARCHITECTURE ===== -->
+<section id="architecture">
+  <div class="eyebrow reveal-on-scroll">THE HYBRID ARCHITECTURE</div>
+  <h2 class="section-title reveal-on-scroll">An industry-first: mechanical <em>meets</em> biological.</h2>
+  <p class="hero-sub reveal-on-scroll" style="margin-top:0;">Every morphing wing before ours failed the same way — stress, fatigue, unreliable return-to-shape. Our hybrid architecture solves all three.</p>
+
+  <div class="arch reveal-on-scroll">
+    <!-- Visual -->
+    <div class="arch-visual">
+      <svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
+        <!-- Frame -->
+        <rect x="18" y="55" width="264" height="200" fill="none" stroke="#4A463F" stroke-dasharray="2,3" stroke-width="0.5"/>
+        <text x="25" y="48" fill="#4A463F" font-family="JetBrains Mono" font-size="8" letter-spacing="1.5">FIG—01 / CHICXULUB ARCHITECTURE</text>
+
+        <!-- Animated morphing-camber line (flexes to show wing morph) -->
+        <path class="spine-line" d="M 32 150 Q 150 145 278 162" opacity="0.6"/>
+        <text x="150" y="88" fill="#7BA7D9" font-family="JetBrains Mono" font-size="9" text-anchor="middle" letter-spacing="1.5" opacity="0.85">MORPHING CAMBER</text>
+
+        <!-- Airfoil outline (CAD-accurate slender shape) -->
+        <path d="M 30 160 Q 35 128 80 120 Q 160 112 220 128 Q 262 142 278 162 L 278 164 Q 195 176 110 174 Q 50 170 30 160 Z"
+              fill="rgba(20,19,17,0.88)" stroke="#E94F1D" stroke-width="1" stroke-opacity="0.75"/>
+
+        <!-- Main structural spar box -->
+        <rect x="45" y="143" width="32" height="22" rx="1.5" fill="none" stroke="#7BA7D9" stroke-width="0.9" opacity="0.85"/>
+        <rect x="49" y="147" width="24" height="14" rx="1" fill="none" stroke="#7BA7D9" stroke-width="0.6" opacity="0.5"/>
+        <text x="61" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">SPAR</text>
+
+        <!-- Zigzag flexible spine (bellows) -->
+        <path d="M 82 157 L 88 142 L 94 172 L 100 142 L 106 172 L 112 157"
+              fill="none" stroke="#F5B041" stroke-width="1.5" opacity="0.95" stroke-linejoin="round"/>
+        <text x="97" y="128" fill="#F5B041" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1" opacity="0.9">SPINE</text>
+
+        <!-- Lightening trusses between axles -->
+        <path d="M 151 148 L 162 146 L 162 162 Z" fill="none" stroke="#7BA7D9" stroke-width="0.5" opacity="0.4"/>
+        <path d="M 188 152 L 198 151 L 198 164 Z" fill="none" stroke="#7BA7D9" stroke-width="0.5" opacity="0.4"/>
+        <path d="M 219 158 L 228 157 L 228 168 Z" fill="none" stroke="#7BA7D9" stroke-width="0.4" opacity="0.4"/>
+
+        <!-- AXLE 01 (largest) -->
+        <g transform="translate(136 153)">
+          <circle r="15" fill="none" stroke="#7BA7D9" stroke-width="0.9" opacity="0.75"/>
+          <circle r="11" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="1.2"/>
+          <g class="axle">
+            <rect x="-11" y="-1.2" width="22" height="2.4" fill="#E94F1D"/>
+          </g>
+          <circle r="1.8" fill="#F5B041"/>
+        </g>
+        <text x="136" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">01</text>
+
+        <!-- AXLE 02 -->
+        <g transform="translate(176 157)">
+          <circle r="11" fill="none" stroke="#7BA7D9" stroke-width="0.8" opacity="0.75"/>
+          <circle r="8" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="1"/>
+          <g class="axle" style="animation-delay: -1s;">
+            <rect x="-8" y="-1" width="16" height="2" fill="#E94F1D"/>
+          </g>
+          <circle r="1.4" fill="#F5B041"/>
+        </g>
+        <text x="176" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">02</text>
+
+        <!-- AXLE 03 -->
+        <g transform="translate(210 160)">
+          <circle r="8" fill="none" stroke="#7BA7D9" stroke-width="0.7" opacity="0.75"/>
+          <circle r="6" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="0.9"/>
+          <g class="axle" style="animation-delay: -2s;">
+            <rect x="-6" y="-0.8" width="12" height="1.6" fill="#E94F1D"/>
+          </g>
+          <circle r="1" fill="#F5B041"/>
+        </g>
+        <text x="210" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">03</text>
+
+        <!-- AXLE 04 (smallest) -->
+        <g transform="translate(240 163)">
+          <circle r="5" fill="none" stroke="#7BA7D9" stroke-width="0.6" opacity="0.75"/>
+          <circle r="3.5" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="0.8"/>
+          <g class="axle" style="animation-delay: -3s;">
+            <rect x="-3.5" y="-0.6" width="7" height="1.2" fill="#E94F1D"/>
+          </g>
+          <circle r="0.7" fill="#F5B041"/>
+        </g>
+        <text x="240" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">04</text>
+        <text x="188" y="222" fill="#4A463F" font-family="JetBrains Mono" font-size="6" text-anchor="middle" letter-spacing="2">AXLES</text>
+
+        <!-- Trailing edge pin -->
+        <circle cx="273" cy="164" r="0.9" fill="none" stroke="#7BA7D9" stroke-width="0.5" opacity="0.6"/>
+
+        <!-- Footer caption -->
+        <text x="150" y="240" fill="#4A463F" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="2.2">MECHANICAL  ·  BIOLOGICAL  ·  HYBRID</text>
+      </svg>
+    </div>
+
+    <!-- Features -->
+    <div class="arch-features">
+      <div class="arch-feature">
+        <div class="arch-feature-num">01 / MECHANICAL AXLES</div>
+        <div class="arch-feature-title">Precision movement.</div>
+        <div class="arch-feature-desc">A series of rigid rotational axles drive the wing's morphing action with zero actuation-lag and full control authority.</div>
+      </div>
+      <div class="arch-feature">
+        <div class="arch-feature-num">02 / BIO-INSPIRED SPINE</div>
+        <div class="arch-feature-title">Natural flex.</div>
+        <div class="arch-feature-desc">A flexible vertebral spine distributes aerodynamic load the way a fish distributes water pressure — smoothly, and across the full length of the wing.</div>
+      </div>
+      <div class="arch-feature">
+        <div class="arch-feature-num">03 / HYBRID ADVANTAGE</div>
+        <div class="arch-feature-title">Reliability solved.</div>
+        <div class="arch-feature-desc">Fishbone wings stress the whole structure during morph. Our axle-spine system isolates stress to rotation points — and guarantees return to optimal cruise geometry, every cycle.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PERFORMANCE DATA ===== -->
+<section class="perf-section" id="performance">
+  <div class="eyebrow reveal-on-scroll">PERFORMANCE / THE EVIDENCE</div>
+  <h2 class="section-title reveal-on-scroll">Two datasets. <em>One story.</em></h2>
+  <p class="hero-sub reveal-on-scroll" style="margin-top:0;">
+    Real prototype measurements — then projected to production scale. Proof first, promise second.
+  </p>
+
+  <div class="perf-intro reveal-on-scroll">
+    <div class="perf-intro-card">
+      <div class="perf-intro-num">01 · MEASURED</div>
+      <h3>Wind Tunnel · Proto V6</h3>
+      <p>Raw force-balance data from our V6 prototype, tested head-to-head against a traditional cruise-configured wing. Twenty-one angles of attack, from −5° to +15°.</p>
+    </div>
+    <div class="perf-intro-card">
+      <div class="perf-intro-num">02 · PROJECTED</div>
+      <h3>Curve-Fit · Production Scale</h3>
+      <p>A curve-fit extrapolation of the Proto V6 results, scaled up to predict performance on a full-size production wing against a conventional baseline.</p>
+    </div>
+  </div>
+
+  <!-- =============== DATASET 01 · WIND TUNNEL =============== -->
+  <div class="perf-block reveal-on-scroll" id="wt-block">
+    <div class="perf-block-header">
+      <div class="perf-block-tag">DATASET 01 · WIND TUNNEL</div>
+      <h3 class="perf-block-title">Prototype vs. traditional, <em>measured.</em></h3>
+      <p class="perf-block-desc">Force-balance readings from the Proto V6 wind tunnel sweep. Note the cruise band (0–5°) — that's where real aircraft live, and where the gap opens up.</p>
+    </div>
+
+    <div class="chart-legend">
+      <span><i style="background:#E94F1D"></i>Chicxulub · Proto V6</span>
+      <span><i class="dashed" style="color:#7BA7D9"></i>Traditional Wing</span>
+    </div>
+
+    <div class="chart-tabs">
+      <button data-tab="Lift">Lift</button>
+      <button data-tab="Drag">Drag</button>
+      <button data-tab="LD" class="active">L / D</button>
+      <button data-tab="Table">Table</button>
+    </div>
+
+    <div class="chart-wrap" id="wtWrap">
+      <svg id="wtChart" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="chart-label" id="wtLabel">L / D RATIO</div>
+      <div class="chart-tooltip" id="wtTooltip"></div>
+    </div>
+
+    <div class="chart-stats" id="wtStats"></div>
+    <div class="chart-callout" id="wtCallout"></div>
+    <div class="chart-table" id="wtTable" hidden></div>
+  </div>
+
+  <!-- =============== DATASET 02 · CURVE-FIT EXTRAPOLATION =============== -->
+  <div class="perf-block reveal-on-scroll" id="cf-block">
+    <div class="perf-block-header">
+      <div class="perf-block-tag alt">DATASET 02 · EXTRAPOLATION</div>
+      <h3 class="perf-block-title">Scaled to <em>production.</em></h3>
+      <p class="perf-block-desc">Curve-fit applied to a full-size production wing against a conventional baseline. Same shape of advantage — much bigger numbers.</p>
+    </div>
+
+    <div class="chart-legend">
+      <span><i style="background:#7BA7D9"></i>Conventional Baseline</span>
+      <span><i class="dashed" style="color:#E94F1D"></i>Chicxulub Curve-Fit</span>
+    </div>
+
+    <div class="chart-tabs">
+      <button data-tab="Lift" class="active">Lift</button>
+      <button data-tab="Drag">Drag</button>
+      <button data-tab="LD">L / D</button>
+      <button data-tab="Table">Table</button>
+    </div>
+
+    <div class="chart-wrap" id="chartWrap">
+      <svg id="perfChart" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="chart-label" id="chartLabel">Lift (N)</div>
+      <div class="chart-tooltip" id="chartTooltip"></div>
+    </div>
+
+    <div class="chart-stats" id="chartStats"></div>
+    <div class="chart-table" id="chartTable" hidden></div>
+  </div>
+</section>
+
+<!-- ===== IMPACT GRID ===== -->
+<section id="impact">
+  <div class="eyebrow reveal-on-scroll">WHAT THIS MEANS</div>
+  <h2 class="section-title reveal-on-scroll">Beyond <em>aerodynamics.</em></h2>
+  <p class="hero-sub reveal-on-scroll" style="margin-top:0;">Less drag. Less thrust. Less everything you don't want — more of everything you do.</p>
+
+  <div class="impact-grid reveal-on-scroll">
+    <div class="impact-card">
+      <div>
+        <div class="impact-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+        </div>
+        <h3 class="impact-title">Fuel Tackled at the Source</h3>
+        <p class="impact-desc">$25 billion of annual waste, attacked where it actually happens — at the wing surface.</p>
+      </div>
+    </div>
+
+    <div class="impact-card">
+      <div>
+        <div class="impact-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 18 0"/><path d="M8 12a4 4 0 0 1 8 0"/></svg>
+        </div>
+        <h3 class="impact-title">Quieter Takeoffs</h3>
+        <p class="impact-desc">Cleaner airflow means less engine thrust — and communities near airports get their nights back.</p>
+      </div>
+    </div>
+
+    <div class="impact-card">
+      <div>
+        <div class="impact-icon">
+          <svg viewBox="0 0 24 24"><path d="M2 12h20"/><path d="M6 6l-4 6 4 6"/><path d="M18 6l4 6-4 6"/></svg>
+        </div>
+        <h3 class="impact-title">Wider Flight Envelope</h3>
+        <p class="impact-desc">Higher L/D and lower required thrust expand the operational boundary — giving pilots more control and making flight inherently safer.</p>
+      </div>
+    </div>
+
+    <div class="impact-card">
+      <div>
+        <div class="impact-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        </div>
+        <h3 class="impact-title">Longer Service Life</h3>
+        <p class="impact-desc">Less mechanical stress, fewer maintenance cycles, longer airframe life. Operators save twice — in fuel and in fleet cost.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CLOSER ===== -->
+<section class="closer" id="closer">
+  <p class="closer-quote reveal-on-scroll">
+    We are making the era of rigid, <em>wasteful flight</em> extinct.
+  </p>
+
+  <div class="closer-brand reveal-on-scroll">
+    METEOR<span>·</span>DYNAMICS
+  </div>
+  <div class="closer-tag reveal-on-scroll">CHICXULUB&nbsp;&nbsp;/&nbsp;&nbsp;THE FUTURE OF EFFICIENT AVIATION</div>
+</section>
+
+<footer>
+  <div>© 2026 METEOR DYNAMICS</div>
+  <div>PITCH DECK / V1.0 / UNSW</div>
+</footer>
+
+<script>
+  // ============ STARFIELD ============
+  const starfield = document.getElementById('starfield');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDuration = (2 + Math.random() * 4) + 's';
+    s.style.animationDelay = Math.random() * 4 + 's';
+    s.style.opacity = 0.2 + Math.random() * 0.8;
+    s.style.width = s.style.height = (Math.random() * 2 + 1) + 'px';
+    starfield.appendChild(s);
+  }
+
+  // ============ REVEAL ON SCROLL ============
+  const revealEls = document.querySelectorAll('.reveal-on-scroll');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in-view');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // ============ BIG COUNTER ============
+  const bigCounter = document.getElementById('bigCounter');
+  let bigCountStarted = false;
+  const bigIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !bigCountStarted) {
+        bigCountStarted = true;
+        const target = 25000000000;
+        const duration = 2200;
+        const startTime = performance.now();
+        function step(now) {
+          const p = Math.min((now - startTime) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          const v = Math.floor(target * eased);
+          bigCounter.textContent = '$' + v.toLocaleString();
+          if (p < 1) requestAnimationFrame(step);
+          else bigCounter.textContent = '$25,000,000,000';
+        }
+        requestAnimationFrame(step);
+      }
+    });
+  }, { threshold: 0.4 });
+  bigIO.observe(bigCounter);
+
+  // ============ STAT COUNTERS ============
+  const stats = document.querySelectorAll('.stat-num[data-target]');
+  const statIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !e.target.dataset.done) {
+        e.target.dataset.done = '1';
+        const target = parseInt(e.target.dataset.target);
+        const prefix = e.target.dataset.prefix || '';
+        const suffix = e.target.dataset.suffix || '';
+        const duration = 1600;
+        const startTime = performance.now();
+        function step(now) {
+          const p = Math.min((now - startTime) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          const v = Math.floor(target * eased);
+          e.target.textContent = prefix + v.toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(step);
+          else e.target.textContent = prefix + target.toLocaleString() + suffix;
+        }
+        requestAnimationFrame(step);
+      }
+    });
+  }, { threshold: 0.4 });
+  stats.forEach(s => statIO.observe(s));
+
+  // ============ CRATER ACTIVATION ============
+  const craters = document.querySelectorAll('.crater');
+  const revealSection = document.getElementById('reveal');
+  const craterIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        craters.forEach(c => c.classList.add('active'));
+      }
+    });
+  }, { threshold: 0.3 });
+  craterIO.observe(revealSection);
+
+  // ============ PROGRESS NAV + MODAL ============
+  const dots = document.querySelectorAll('.progress-dot');
+  const sections = ['hero', 'problem', 'wings', 'reveal', 'architecture', 'performance', 'impact', 'closer'].map(id => document.getElementById(id));
+  const navModal = document.getElementById('navModal');
+  const navItems = document.querySelectorAll('.nav-modal-list li');
+  const progressEl = document.querySelector('.progress');
+
+  function openNav() {
+    navModal.hidden = false;
+    requestAnimationFrame(() => navModal.classList.add('visible'));
+    document.body.style.overflow = 'hidden';
+  }
+  function closeNav() {
+    navModal.classList.remove('visible');
+    document.body.style.overflow = '';
+    setTimeout(() => { navModal.hidden = true; }, 320);
+  }
+
+  progressEl.addEventListener('click', openNav);
+  navModal.querySelector('.nav-modal-backdrop').addEventListener('click', closeNav);
+  navModal.querySelector('.nav-modal-close').addEventListener('click', closeNav);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !navModal.hidden) closeNav();
+  });
+
+  navItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      const target = document.querySelector(item.dataset.target);
+      closeNav();
+      if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth' }));
+    });
+  });
+
+  const progressIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = sections.indexOf(e.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        navItems.forEach((it, i) => it.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  sections.forEach(s => progressIO.observe(s));
+
+  // ============ WIND TUNNEL CHART (DATASET 01) ============
+  (function(){
+    const angles = [-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+    const chicxLift = [-160.734,-134.442,-73.104,-38.943,-9.232,48.931,109.037,180.501,248.915,309.684,378.637,436.224,485.555,542.700,597.446,660.707,720.076,798.105,873.583,927.721,1005.692];
+    const chicxDrag = [196.439,238.944,225.233,209.203,210.429,190.988,174.948,176.390,148.870,132.690,148.242,154.980,197.412,203.577,240.491,255.996,269.215,269.618,290.197,347.293,312.142];
+    const chicxLD   = chicxLift.map((l,i)=> l/chicxDrag[i]);
+    const tradLift  = [-483.066,-394.740,-350.530,-235.605,-235.605,-190.759,-130.661,-80.978,196.433,285.622,356.438,467.245,541.117,630.297,630.297,778.789,809.031,902.323,1025.621,1118.077,1219.923];
+    const tradDrag  = [376.309,288.476,283.623,283.623,263.536,227.671,192.402,192.744,150.908,136.297,145.000,150.997,195.790,221.405,221.405,244.722,248.709,251.679,276.178,306.760,316.271];
+    const tradLD    = tradLift.map((l,i)=> l/tradDrag[i]);
+
+    const metrics = {
+      Lift: { a: chicxLift, b: tradLift, label: 'LIFT (N)',         digits: 1 },
+      Drag: { a: chicxDrag, b: tradDrag, label: 'DRAG (N)',         digits: 1 },
+      LD:   { a: chicxLD,   b: tradLD,   label: 'L / D RATIO',      digits: 3 }
+    };
+
+    const callouts = {
+      Lift: 'Chicxulub generates <b>positive lift at 0° AoA</b> — the traditional wing needs <b>3° of pitch</b> to do the same. Less pitch means less induced drag means less fuel.',
+      Drag: 'At typical cruise angles (0–5°), Chicxulub produces <b>up to 48% less drag</b> than the traditional wing — bottoming out at just <b>132.7 N at 4°</b>.',
+      LD:   'Chicxulub\u2019s L/D curve is <b>shifted left</b> — peak efficiency at lower, more realistic flight angles. At cruise (0–5°), it <b>beats the traditional wing on every data point</b>.'
+    };
+
+    const COLOR_A = '#E94F1D'; // Chicxulub — primary
+    const COLOR_B = '#7BA7D9'; // Traditional — secondary
+
+    const svg = document.getElementById('wtChart');
+    const tooltip = document.getElementById('wtTooltip');
+    const chartLabel = document.getElementById('wtLabel');
+    const statsEl = document.getElementById('wtStats');
+    const calloutEl = document.getElementById('wtCallout');
+    const tableEl = document.getElementById('wtTable');
+    const wrapEl = document.getElementById('wtWrap');
+
+    const W = 800, H = 400;
+    const M = { top: 24, right: 30, bottom: 54, left: 70 };
+    const plotW = W - M.left - M.right;
+    const plotH = H - M.top - M.bottom;
+
+    const xScale = (i) => M.left + (i / (angles.length - 1)) * plotW;
+    const yScale = (v, min, max) => M.top + (1 - (v - min) / (max - min)) * plotH;
+
+    function renderChart(tab) {
+      const m = metrics[tab];
+      const all = m.a.concat(m.b);
+      let min = Math.min.apply(null, all);
+      let max = Math.max.apply(null, all);
+      const pad = (max - min) * 0.1;
+      min = min - pad;
+      max = max + pad;
+
+      let html = '';
+      const yTicks = 5;
+      for (let i = 0; i <= yTicks; i++) {
+        const y = M.top + (i / yTicks) * plotH;
+        const val = max - (i / yTicks) * (max - min);
+        html += '<line x1="'+M.left+'" y1="'+y+'" x2="'+(W-M.right)+'" y2="'+y+'" stroke="rgba(248,244,239,0.05)" stroke-dasharray="2,4"/>';
+        html += '<text x="'+(M.left-14)+'" y="'+(y+4)+'" text-anchor="end" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="11">'+val.toFixed(tab==='LD'?2:0)+'</text>';
+      }
+      // Zero reference line if applicable
+      if (min < 0 && max > 0) {
+        const zeroY = yScale(0, min, max);
+        html += '<line x1="'+M.left+'" y1="'+zeroY+'" x2="'+(W-M.right)+'" y2="'+zeroY+'" stroke="rgba(248,244,239,0.18)" stroke-dasharray="4 3"/>';
+        html += '<text x="'+(W-M.right-6)+'" y="'+(zeroY-5)+'" text-anchor="end" fill="#8B847D" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1">0</text>';
+      }
+      // Cruise band highlight (0°–5°)
+      const bandX1 = xScale(angles.indexOf(0));
+      const bandX2 = xScale(angles.indexOf(5));
+      html += '<rect x="'+bandX1+'" y="'+M.top+'" width="'+(bandX2-bandX1)+'" height="'+plotH+'" fill="rgba(245,176,65,0.04)" stroke="none"/>';
+      html += '<text x="'+((bandX1+bandX2)/2)+'" y="'+(M.top+14)+'" text-anchor="middle" fill="#8B847D" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.5">CRUISE BAND</text>';
+
+      angles.forEach(function(a, i){
+        if (a % 5 === 0) {
+          const x = xScale(i);
+          html += '<line x1="'+x+'" y1="'+M.top+'" x2="'+x+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.04)" stroke-dasharray="2,4"/>';
+          html += '<text x="'+x+'" y="'+(H-M.bottom+22)+'" text-anchor="middle" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="11">'+a+'°</text>';
+        }
+      });
+      html += '<text x="'+(M.left + plotW/2)+'" y="'+(H-10)+'" text-anchor="middle" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="2">ANGLE OF ATTACK</text>';
+
+      html += '<line x1="'+M.left+'" y1="'+M.top+'" x2="'+M.left+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
+      html += '<line x1="'+M.left+'" y1="'+(H-M.bottom)+'" x2="'+(W-M.right)+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
+
+      // Traditional (dashed, secondary)
+      let bPath = '';
+      m.b.forEach(function(v, i){ bPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+bPath+'" fill="none" stroke="'+COLOR_B+'" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round"/>';
+
+      // Chicxulub (solid, primary, thicker)
+      let aPath = '';
+      m.a.forEach(function(v, i){ aPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+aPath+'" fill="none" stroke="'+COLOR_A+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>';
+
+      m.b.forEach(function(v, i){ html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="2.5" fill="'+COLOR_B+'"/>'; });
+      m.a.forEach(function(v, i){ html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="3.2" fill="'+COLOR_A+'"/>'; });
+
+      html += '<line id="wtTracker" x1="0" y1="'+M.top+'" x2="0" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.25)" stroke-width="1" opacity="0"/>';
+      html += '<rect id="wtHoverRect" x="'+M.left+'" y="'+M.top+'" width="'+plotW+'" height="'+plotH+'" fill="transparent" style="cursor: crosshair;"/>';
+
+      svg.innerHTML = html;
+      chartLabel.textContent = m.label;
+      calloutEl.innerHTML = callouts[tab];
+
+      renderStats(tab);
+
+      const hoverRect = document.getElementById('wtHoverRect');
+      const tracker = document.getElementById('wtTracker');
+
+      function onMove(clientX, clientY) {
+        const svgRect = svg.getBoundingClientRect();
+        const scale = W / svgRect.width;
+        const x = (clientX - svgRect.left) * scale;
+        const t = (x - M.left) / plotW;
+        const idx = Math.max(0, Math.min(angles.length - 1, Math.round(t * (angles.length - 1))));
+        const snapX = xScale(idx);
+        tracker.setAttribute('x1', snapX);
+        tracker.setAttribute('x2', snapX);
+        tracker.setAttribute('opacity', '1');
+
+        const wrapRect = wrapEl.getBoundingClientRect();
+        const displayX = (snapX / W) * svgRect.width + (svgRect.left - wrapRect.left);
+        const d = tab === 'LD' ? 3 : 1;
+        tooltip.innerHTML =
+          '<div class="t-angle">α = '+angles[idx]+'°</div>'+
+          '<div class="t-row" style="color:'+COLOR_A+'">CHICXULUB &nbsp; <b>'+m.a[idx].toFixed(d)+'</b></div>'+
+          '<div class="t-row" style="color:'+COLOR_B+'">TRADITIONAL &nbsp; <b>'+m.b[idx].toFixed(d)+'</b></div>';
+        tooltip.classList.add('visible');
+        const tw = tooltip.offsetWidth;
+        let tx = displayX + 14;
+        if (tx + tw > wrapRect.width - 12) tx = displayX - tw - 14;
+        tooltip.style.left = tx + 'px';
+        tooltip.style.top = (clientY - wrapRect.top - 10) + 'px';
+      }
+
+      hoverRect.addEventListener('mousemove', function(e){ onMove(e.clientX, e.clientY); });
+      hoverRect.addEventListener('touchstart', function(e){ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+      hoverRect.addEventListener('touchmove', function(e){ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+      hoverRect.addEventListener('mouseleave', function(){
+        tracker.setAttribute('opacity', '0');
+        tooltip.classList.remove('visible');
+      });
+    }
+
+    function renderStats(tab) {
+      const m = metrics[tab];
+      const maxA = Math.max.apply(null, m.a);
+      const maxB = Math.max.apply(null, m.b);
+      const peakAngleA = angles[m.a.indexOf(maxA)];
+      const peakAngleB = angles[m.b.indexOf(maxB)];
+      // Value at cruise (α=0°)
+      const cruiseIdx = angles.indexOf(0);
+      const d = tab === 'LD' ? 2 : 1;
+
+      statsEl.innerHTML =
+        '<div class="chart-stat"><div class="s-lbl">Peak · Chicxulub</div><div class="s-val">'+maxA.toFixed(d)+'</div><div class="s-lbl" style="margin-top:6px;color:var(--text-dim)">at α = '+peakAngleA+'°</div></div>'+
+        '<div class="chart-stat orig"><div class="s-lbl">Peak · Traditional</div><div class="s-val">'+maxB.toFixed(d)+'</div><div class="s-lbl" style="margin-top:6px;color:var(--text-dim)">at α = '+peakAngleB+'°</div></div>'+
+        '<div class="chart-stat ratio"><div class="s-lbl">At Cruise (α = 0°)</div><div class="s-val">'+m.a[cruiseIdx].toFixed(d)+' / '+m.b[cruiseIdx].toFixed(d)+'</div><div class="s-lbl" style="margin-top:6px;color:var(--text-dim)">chicxulub / traditional</div></div>';
+    }
+
+    function renderTable() {
+      let rows = '';
+      angles.forEach(function(a, i){
+        const zero = a === 0 ? ' class="zero"' : '';
+        const betterLD = chicxLD[i] > tradLD[i];
+        rows += '<tr'+zero+'>'+
+          '<td class="sep">'+a+'°</td>'+
+          '<td>'+chicxLift[i].toFixed(2)+'</td>'+
+          '<td>'+chicxDrag[i].toFixed(2)+'</td>'+
+          '<td class="sep" style="color:'+(betterLD?'#E94F1D':'var(--text-muted)')+';font-weight:'+(betterLD?600:400)+'">'+chicxLD[i].toFixed(3)+'</td>'+
+          '<td>'+tradLift[i].toFixed(2)+'</td>'+
+          '<td>'+tradDrag[i].toFixed(2)+'</td>'+
+          '<td style="color:'+(!betterLD?'#7BA7D9':'var(--text-muted)')+';font-weight:'+(!betterLD?600:400)+'">'+tradLD[i].toFixed(3)+'</td>'+
+          '</tr>';
+      });
+      tableEl.innerHTML =
+        '<table>'+
+        '<thead>'+
+          '<tr><th rowspan="2" class="sep">α</th><th colspan="3" style="color:#E94F1D;border-bottom:2px solid #E94F1D;text-align:center;">Chicxulub · Proto V6</th><th colspan="3" style="color:#7BA7D9;border-bottom:2px solid #7BA7D9;text-align:center;">Traditional</th></tr>'+
+          '<tr><th>Lift (N)</th><th>Drag (N)</th><th class="sep">L/D</th><th>Lift (N)</th><th>Drag (N)</th><th>L/D</th></tr>'+
+        '</thead>'+
+        '<tbody>'+rows+'</tbody>'+
+        '</table>'+
+        '<div style="padding:14px 18px;border-top:1px solid var(--border);font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.15em;text-transform:uppercase;">Highlighted L/D = better performer at that angle</div>';
+    }
+
+    document.querySelectorAll('#wt-block .chart-tabs button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('#wt-block .chart-tabs button').forEach(function(b){ b.classList.toggle('active', b === btn); });
+        if (tab === 'Table') {
+          wrapEl.hidden = true;
+          statsEl.hidden = true;
+          calloutEl.hidden = true;
+          tableEl.hidden = false;
+          if (!tableEl.dataset.rendered) { renderTable(); tableEl.dataset.rendered = '1'; }
+        } else {
+          wrapEl.hidden = false;
+          statsEl.hidden = false;
+          calloutEl.hidden = false;
+          tableEl.hidden = true;
+          renderChart(tab);
+        }
+      });
+    });
+
+    renderChart('LD');
+  })();
+
+  // ============ PERFORMANCE CHART (DATASET 02 · CURVE-FIT) ============
+  (function(){
+    const angles = [-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+    const origLift = [227.6583,311.9323,341.8096,315.7099,315.7099,327.6084,353.5486,417.5111,502.7724,601.0037,615.5571,683.7336,705.7336,693.3024,693.3024,688.0409,730.1839,787.9849,898.5633,972.0705,976.3989];
+    const origDrag = [208.6574,331.1135,317.3044,332.7711,332.7711,327.5385,333.1927,329.3799,342.0099,386.6636,375.2506,417.6381,429.8593,420.2561,420.2561,422.1926,435.016,470.6337,484.411,523.7687,531.1628];
+    const origLD = origLift.map((l,i)=> l/origDrag[i]);
+    const curveLift = [676.3509,626.3158,633.0978,682.6926,762.7173,862.41,972.6303,1085.8587,1196.1973,1299.3692,1392.7186,1475.2112,1547.4338,1611.5942,1671.5219,1732.6672,1802.1018,1888.5186,2002.2317,2155.1764,2360.9093];
+    const curveDrag = [271.2634,301.6784,325.2149,343.2599,357.0799,367.82,376.5048,384.0377,391.2014,398.6577,406.9472,416.4899,427.5849,440.4102,455.0229,471.3594,489.235,508.3441,528.2604,548.4365,568.2042];
+    const curveLD = curveLift.map((l,i)=> l/curveDrag[i]);
+
+    const metrics = {
+      Lift: { orig: origLift,  curve: curveLift,  label: 'LIFT (N)',  digits: 1 },
+      Drag: { orig: origDrag,  curve: curveDrag,  label: 'DRAG (N)',  digits: 1 },
+      LD:   { orig: origLD,    curve: curveLD,    label: 'L / D RATIO', digits: 3 }
+    };
+
+    const COLOR_ORIG = '#7BA7D9';
+    const COLOR_CURVE = '#E94F1D';
+
+    const svg = document.getElementById('perfChart');
+    const tooltip = document.getElementById('chartTooltip');
+    const chartLabel = document.getElementById('chartLabel');
+    const statsEl = document.getElementById('chartStats');
+    const tableEl = document.getElementById('chartTable');
+    const wrapEl = document.getElementById('chartWrap');
+
+    const W = 800, H = 400;
+    const M = { top: 24, right: 30, bottom: 54, left: 70 };
+    const plotW = W - M.left - M.right;
+    const plotH = H - M.top - M.bottom;
+
+    const xScale = (i) => M.left + (i / (angles.length - 1)) * plotW;
+    const yScale = (v, min, max) => M.top + (1 - (v - min) / (max - min)) * plotH;
+
+    function renderChart(tab) {
+      const m = metrics[tab];
+      const all = m.orig.concat(m.curve);
+      let min = Math.min.apply(null, all);
+      let max = Math.max.apply(null, all);
+      const pad = (max - min) * 0.08;
+      min = Math.max(0, min - pad);
+      max = max + pad;
+
+      let html = '';
+      const yTicks = 5;
+      for (let i = 0; i <= yTicks; i++) {
+        const y = M.top + (i / yTicks) * plotH;
+        const val = max - (i / yTicks) * (max - min);
+        html += '<line x1="'+M.left+'" y1="'+y+'" x2="'+(W-M.right)+'" y2="'+y+'" stroke="rgba(248,244,239,0.05)" stroke-dasharray="2,4"/>';
+        html += '<text x="'+(M.left-14)+'" y="'+(y+4)+'" text-anchor="end" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="11">'+val.toFixed(tab==='LD'?2:0)+'</text>';
+      }
+      angles.forEach(function(a, i){
+        if (a % 5 === 0) {
+          const x = xScale(i);
+          html += '<line x1="'+x+'" y1="'+M.top+'" x2="'+x+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.04)" stroke-dasharray="2,4"/>';
+          html += '<text x="'+x+'" y="'+(H-M.bottom+22)+'" text-anchor="middle" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="11">'+a+'°</text>';
+        }
+      });
+      html += '<text x="'+(M.left + plotW/2)+'" y="'+(H-10)+'" text-anchor="middle" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="2">ANGLE OF ATTACK</text>';
+
+      html += '<line x1="'+M.left+'" y1="'+M.top+'" x2="'+M.left+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
+      html += '<line x1="'+M.left+'" y1="'+(H-M.bottom)+'" x2="'+(W-M.right)+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
+
+      let origPath = '';
+      m.orig.forEach(function(v, i){ origPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+origPath+'" fill="none" stroke="'+COLOR_ORIG+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+
+      let curvePath = '';
+      m.curve.forEach(function(v, i){ curvePath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+curvePath+'" fill="none" stroke="'+COLOR_CURVE+'" stroke-width="2.5" stroke-dasharray="7 4" stroke-linejoin="round" stroke-linecap="round"/>';
+
+      m.orig.forEach(function(v, i){
+        html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="3" fill="'+COLOR_ORIG+'"/>';
+      });
+      m.curve.forEach(function(v, i){
+        html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="3" fill="'+COLOR_CURVE+'"/>';
+      });
+
+      html += '<line id="chartTracker" x1="0" y1="'+M.top+'" x2="0" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.25)" stroke-width="1" opacity="0"/>';
+      html += '<rect id="chartHoverRect" x="'+M.left+'" y="'+M.top+'" width="'+plotW+'" height="'+plotH+'" fill="transparent" style="cursor: crosshair;"/>';
+
+      svg.innerHTML = html;
+      chartLabel.textContent = m.label;
+
+      renderStats(tab);
+
+      const hoverRect = document.getElementById('chartHoverRect');
+      const tracker = document.getElementById('chartTracker');
+
+      function onMove(clientX, clientY) {
+        const svgRect = svg.getBoundingClientRect();
+        const scale = W / svgRect.width;
+        const x = (clientX - svgRect.left) * scale;
+        const t = (x - M.left) / plotW;
+        const idx = Math.max(0, Math.min(angles.length - 1, Math.round(t * (angles.length - 1))));
+        const snapX = xScale(idx);
+        tracker.setAttribute('x1', snapX);
+        tracker.setAttribute('x2', snapX);
+        tracker.setAttribute('opacity', '1');
+
+        const wrapRect = wrapEl.getBoundingClientRect();
+        const displayX = (snapX / W) * svgRect.width + (svgRect.left - wrapRect.left);
+        const d = tab === 'LD' ? 3 : 1;
+        tooltip.innerHTML =
+          '<div class="t-angle">α = '+angles[idx]+'°</div>'+
+          '<div class="t-row" style="color:'+COLOR_ORIG+'">BASELINE &nbsp; <b>'+m.orig[idx].toFixed(d)+'</b></div>'+
+          '<div class="t-row" style="color:'+COLOR_CURVE+'">CHICXULUB &nbsp; <b>'+m.curve[idx].toFixed(d)+'</b></div>';
+        tooltip.classList.add('visible');
+        const tw = tooltip.offsetWidth;
+        let tx = displayX + 14;
+        if (tx + tw > wrapRect.width - 12) tx = displayX - tw - 14;
+        tooltip.style.left = tx + 'px';
+        tooltip.style.top = (clientY - wrapRect.top - 10) + 'px';
+      }
+
+      hoverRect.addEventListener('mousemove', function(e){ onMove(e.clientX, e.clientY); });
+      hoverRect.addEventListener('touchstart', function(e){ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+      hoverRect.addEventListener('touchmove', function(e){ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+      hoverRect.addEventListener('mouseleave', function(){
+        tracker.setAttribute('opacity', '0');
+        tooltip.classList.remove('visible');
+      });
+    }
+
+    function renderStats(tab) {
+      const m = metrics[tab];
+      const maxO = Math.max.apply(null, m.orig);
+      const maxC = Math.max.apply(null, m.curve);
+      const d = tab === 'LD' ? 2 : 1;
+      const ratio = (maxC / maxO).toFixed(2);
+      statsEl.innerHTML =
+        '<div class="chart-stat orig"><div class="s-lbl">Peak · Baseline</div><div class="s-val">'+maxO.toFixed(d)+'</div></div>'+
+        '<div class="chart-stat"><div class="s-lbl">Peak · Chicxulub</div><div class="s-val">'+maxC.toFixed(d)+'</div></div>'+
+        '<div class="chart-stat ratio"><div class="s-lbl">Gain Factor</div><div class="s-val">×'+ratio+'</div></div>';
+    }
+
+    function renderTable() {
+      let rows = '';
+      angles.forEach(function(a, i){
+        const zero = a === 0 ? ' class="zero"' : '';
+        rows += '<tr'+zero+'>'+
+          '<td class="sep">'+a+'°</td>'+
+          '<td>'+origLift[i].toFixed(1)+'</td>'+
+          '<td>'+origDrag[i].toFixed(1)+'</td>'+
+          '<td class="sep">'+origLD[i].toFixed(3)+'</td>'+
+          '<td>'+curveLift[i].toFixed(1)+'</td>'+
+          '<td>'+curveDrag[i].toFixed(1)+'</td>'+
+          '<td>'+curveLD[i].toFixed(3)+'</td>'+
+          '</tr>';
+      });
+      tableEl.innerHTML =
+        '<table>'+
+        '<thead>'+
+          '<tr><th rowspan="2" class="sep">α</th><th colspan="3" class="orig-head">Conventional Baseline</th><th colspan="3" class="curve-head">Chicxulub</th></tr>'+
+          '<tr><th>Lift (N)</th><th>Drag (N)</th><th class="sep">L/D</th><th>Lift (N)</th><th>Drag (N)</th><th>L/D</th></tr>'+
+        '</thead>'+
+        '<tbody>'+rows+'</tbody>'+
+        '</table>';
+    }
+
+    document.querySelectorAll('#cf-block .chart-tabs button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('#cf-block .chart-tabs button').forEach(function(b){ b.classList.toggle('active', b === btn); });
+        if (tab === 'Table') {
+          wrapEl.hidden = true;
+          statsEl.hidden = true;
+          tableEl.hidden = false;
+          if (!tableEl.dataset.rendered) { renderTable(); tableEl.dataset.rendered = '1'; }
+        } else {
+          wrapEl.hidden = false;
+          statsEl.hidden = false;
+          tableEl.hidden = true;
+          renderChart(tab);
+        }
+      });
+    });
+
+    renderChart('Lift');
+  })();
+
+  // ============ QR BADGE ============
+  (function(){
+    // Override by setting `window.QR_TARGET_URL = '...'` before this script runs.
+    // Defaults to the current page URL so it "just works" when deployed.
+    const targetUrl = window.QR_TARGET_URL || window.location.href;
+    const qrEl = document.getElementById('qrCode');
+    if (!qrEl) return;
+    const size = 240; // resolution of the generated PNG (downscaled visually)
+    const src = 'https://api.qrserver.com/v1/create-qr-code/'
+      + '?size=' + size + 'x' + size
+      + '&bgcolor=FFFFFF&color=0A0908&margin=4&qzone=1'
+      + '&data=' + encodeURIComponent(targetUrl);
+    const img = new Image();
+    img.alt = 'QR code — scan to open this page';
+    img.loading = 'eager';
+    img.src = src;
+    qrEl.appendChild(img);
+  })();
+
+  // ============ IPAD TOUCH: prevent body scroll jank ============
+  document.addEventListener('touchmove', (e) => {}, { passive: true });
+</script>
+
+</body>
+</html>
