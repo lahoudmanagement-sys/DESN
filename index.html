@@ -669,14 +669,18 @@
 
   .arch-visual {
     position: relative;
-    aspect-ratio: 1;
-    background: var(--bg-lift);
+    aspect-ratio: 3 / 2;
+    background: #000;
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    overflow: hidden;
+  }
+
+  .arch-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .arch-visual svg {
@@ -1926,85 +1930,7 @@
   <div class="arch reveal-on-scroll">
     <!-- Visual -->
     <div class="arch-visual">
-      <svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
-        <!-- Frame -->
-        <rect x="18" y="55" width="264" height="200" fill="none" stroke="#4A463F" stroke-dasharray="2,3" stroke-width="0.5"/>
-        <text x="25" y="48" fill="#4A463F" font-family="JetBrains Mono" font-size="8" letter-spacing="1.5">FIG—01 / CHICXULUB ARCHITECTURE</text>
-
-        <!-- Animated morphing-camber line (flexes to show wing morph) -->
-        <path class="spine-line" d="M 32 150 Q 150 145 278 162" opacity="0.6"/>
-        <text x="150" y="88" fill="#7BA7D9" font-family="JetBrains Mono" font-size="9" text-anchor="middle" letter-spacing="1.5" opacity="0.85">MORPHING CAMBER</text>
-
-        <!-- Airfoil outline (CAD-accurate slender shape) -->
-        <path d="M 30 160 Q 35 128 80 120 Q 160 112 220 128 Q 262 142 278 162 L 278 164 Q 195 176 110 174 Q 50 170 30 160 Z"
-              fill="rgba(20,19,17,0.88)" stroke="#E94F1D" stroke-width="1" stroke-opacity="0.75"/>
-
-        <!-- Main structural spar box -->
-        <rect x="45" y="143" width="32" height="22" rx="1.5" fill="none" stroke="#7BA7D9" stroke-width="0.9" opacity="0.85"/>
-        <rect x="49" y="147" width="24" height="14" rx="1" fill="none" stroke="#7BA7D9" stroke-width="0.6" opacity="0.5"/>
-        <text x="61" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">SPAR</text>
-
-        <!-- Zigzag flexible spine (bellows) -->
-        <path d="M 82 157 L 88 142 L 94 172 L 100 142 L 106 172 L 112 157"
-              fill="none" stroke="#F5B041" stroke-width="1.5" opacity="0.95" stroke-linejoin="round"/>
-        <text x="97" y="128" fill="#F5B041" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1" opacity="0.9">SPINE</text>
-
-        <!-- Lightening trusses between axles -->
-        <path d="M 151 148 L 162 146 L 162 162 Z" fill="none" stroke="#7BA7D9" stroke-width="0.5" opacity="0.4"/>
-        <path d="M 188 152 L 198 151 L 198 164 Z" fill="none" stroke="#7BA7D9" stroke-width="0.5" opacity="0.4"/>
-        <path d="M 219 158 L 228 157 L 228 168 Z" fill="none" stroke="#7BA7D9" stroke-width="0.4" opacity="0.4"/>
-
-        <!-- AXLE 01 (largest) -->
-        <g transform="translate(136 153)">
-          <circle r="15" fill="none" stroke="#7BA7D9" stroke-width="0.9" opacity="0.75"/>
-          <circle r="11" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="1.2"/>
-          <g class="axle">
-            <rect x="-11" y="-1.2" width="22" height="2.4" fill="#E94F1D"/>
-          </g>
-          <circle r="1.8" fill="#F5B041"/>
-        </g>
-        <text x="136" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">01</text>
-
-        <!-- AXLE 02 -->
-        <g transform="translate(176 157)">
-          <circle r="11" fill="none" stroke="#7BA7D9" stroke-width="0.8" opacity="0.75"/>
-          <circle r="8" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="1"/>
-          <g class="axle" style="animation-delay: -1s;">
-            <rect x="-8" y="-1" width="16" height="2" fill="#E94F1D"/>
-          </g>
-          <circle r="1.4" fill="#F5B041"/>
-        </g>
-        <text x="176" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">02</text>
-
-        <!-- AXLE 03 -->
-        <g transform="translate(210 160)">
-          <circle r="8" fill="none" stroke="#7BA7D9" stroke-width="0.7" opacity="0.75"/>
-          <circle r="6" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="0.9"/>
-          <g class="axle" style="animation-delay: -2s;">
-            <rect x="-6" y="-0.8" width="12" height="1.6" fill="#E94F1D"/>
-          </g>
-          <circle r="1" fill="#F5B041"/>
-        </g>
-        <text x="210" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">03</text>
-
-        <!-- AXLE 04 (smallest) -->
-        <g transform="translate(240 163)">
-          <circle r="5" fill="none" stroke="#7BA7D9" stroke-width="0.6" opacity="0.75"/>
-          <circle r="3.5" fill="rgba(245,176,65,0.06)" stroke="#F5B041" stroke-width="0.8"/>
-          <g class="axle" style="animation-delay: -3s;">
-            <rect x="-3.5" y="-0.6" width="7" height="1.2" fill="#E94F1D"/>
-          </g>
-          <circle r="0.7" fill="#F5B041"/>
-        </g>
-        <text x="240" y="210" fill="#8B847D" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="1.2">04</text>
-        <text x="188" y="222" fill="#4A463F" font-family="JetBrains Mono" font-size="6" text-anchor="middle" letter-spacing="2">AXLES</text>
-
-        <!-- Trailing edge pin -->
-        <circle cx="273" cy="164" r="0.9" fill="none" stroke="#7BA7D9" stroke-width="0.5" opacity="0.6"/>
-
-        <!-- Footer caption -->
-        <text x="150" y="240" fill="#4A463F" font-family="JetBrains Mono" font-size="7" text-anchor="middle" letter-spacing="2.2">MECHANICAL  ·  BIOLOGICAL  ·  HYBRID</text>
-      </svg>
+      <img src="architecture.png" alt="Chicxulub architecture — cross-section render showing spar, flexible spine, and four axles with the Meteor Dynamics wordmark" />
     </div>
 
     <!-- Features -->
