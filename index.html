@@ -2031,35 +2031,35 @@
 <!-- ===== PERFORMANCE DATA ===== -->
 <section class="perf-section" id="performance">
   <div class="eyebrow reveal-on-scroll">PERFORMANCE / THE EVIDENCE</div>
-  <h2 class="section-title reveal-on-scroll">Two datasets. <em>One story.</em></h2>
+  <h2 class="section-title reveal-on-scroll">Chicxulub vs <em>Traditional.</em></h2>
   <p class="hero-sub reveal-on-scroll" style="margin-top:0;">
-    Real prototype measurements — then projected to production scale. Proof first, promise second.
+    Two flight configurations. Same wing, same test rig — measured side-by-side against a traditional wing.
   </p>
 
   <div class="perf-intro reveal-on-scroll">
     <div class="perf-intro-card">
-      <div class="perf-intro-num">01 · MEASURED</div>
-      <h3>Wind Tunnel · Proto V6</h3>
-      <p>Raw force-balance data from our V6 prototype, tested head-to-head against a traditional cruise-configured wing. Twenty-one angles of attack, from −5° to +15°.</p>
+      <div class="perf-intro-num">01 · NEUTRAL</div>
+      <h3>Neutral Configuration</h3>
+      <p>Chicxulub vs. traditional, both wings in their neutral (cruise) configuration. Twenty-one angles of attack, from −5° to +15°.</p>
     </div>
     <div class="perf-intro-card">
-      <div class="perf-intro-num">02 · PROJECTED</div>
-      <h3>Curve-Fit · Production Scale</h3>
-      <p>A curve-fit extrapolation of the Proto V6 results, scaled up to predict performance on a full-size production wing against a conventional baseline.</p>
+      <div class="perf-intro-num">02 · HIGH-LIFT</div>
+      <h3>Landing / Take-off Configuration</h3>
+      <p>Chicxulub vs. traditional, both wings reconfigured for the high-lift regime used during landing and take-off. Same 21-angle sweep.</p>
     </div>
   </div>
 
-  <!-- =============== DATASET 01 · WIND TUNNEL =============== -->
+  <!-- =============== DATASET 01 · NEUTRAL CONFIGURATION =============== -->
   <div class="perf-block reveal-on-scroll" id="wt-block">
     <div class="perf-block-header">
-      <div class="perf-block-tag">DATASET 01 · WIND TUNNEL</div>
-      <h3 class="perf-block-title">Prototype vs. traditional, <em>measured.</em></h3>
-      <p class="perf-block-desc">Force-balance readings from the Proto V6 wind tunnel sweep. Note the cruise band (0–5°) — that's where real aircraft live, and where the gap opens up.</p>
+      <div class="perf-block-tag">DATASET 01 · NEUTRAL CONFIG</div>
+      <h3 class="perf-block-title">Chicxulub vs. traditional, <em>neutral.</em></h3>
+      <p class="perf-block-desc">Both wings in their neutral (cruise) shape. Note the cruise band (0–5°) — that's where real aircraft live, and where the gap opens up.</p>
     </div>
 
     <div class="chart-legend">
-      <span><i style="background:#E94F1D"></i>Chicxulub · Proto V6</span>
-      <span><i class="dashed" style="color:#7BA7D9"></i>Traditional Wing</span>
+      <span><i style="background:#E94F1D"></i>Chicxulub</span>
+      <span><i class="dashed" style="color:#7BA7D9"></i>Traditional</span>
     </div>
 
     <div class="chart-tabs">
@@ -2080,17 +2080,17 @@
     <div class="chart-table" id="wtTable" hidden></div>
   </div>
 
-  <!-- =============== DATASET 02 · CURVE-FIT EXTRAPOLATION =============== -->
+  <!-- =============== DATASET 02 · LANDING / TAKE-OFF CONFIGURATION =============== -->
   <div class="perf-block reveal-on-scroll" id="cf-block">
     <div class="perf-block-header">
-      <div class="perf-block-tag alt">DATASET 02 · EXTRAPOLATION</div>
-      <h3 class="perf-block-title">Scaled to <em>production.</em></h3>
-      <p class="perf-block-desc">Curve-fit applied to a full-size production wing against a conventional baseline. Same shape of advantage — much bigger numbers.</p>
+      <div class="perf-block-tag alt">DATASET 02 · LANDING / TAKE-OFF</div>
+      <h3 class="perf-block-title">Chicxulub vs. traditional, <em>high-lift.</em></h3>
+      <p class="perf-block-desc">Both wings reconfigured for the high-lift regime used during landing and take-off. Bigger lift numbers across the board — and Chicxulub stays ahead.</p>
     </div>
 
     <div class="chart-legend">
-      <span><i style="background:#7BA7D9"></i>Conventional Baseline</span>
-      <span><i class="dashed" style="color:#E94F1D"></i>Chicxulub Curve-Fit</span>
+      <span><i style="background:#E94F1D"></i>Chicxulub</span>
+      <span><i class="dashed" style="color:#7BA7D9"></i>Traditional</span>
     </div>
 
     <div class="chart-tabs">
@@ -2516,24 +2516,26 @@
     renderChart('LD');
   })();
 
-  // ============ PERFORMANCE CHART (DATASET 02 · CURVE-FIT) ============
+  // ============ PERFORMANCE CHART (DATASET 02 · LANDING / TAKE-OFF) ============
   (function(){
     const angles = [-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
-    const origLift = [227.6583,311.9323,341.8096,315.7099,315.7099,327.6084,353.5486,417.5111,502.7724,601.0037,615.5571,683.7336,705.7336,693.3024,693.3024,688.0409,730.1839,787.9849,898.5633,972.0705,976.3989];
-    const origDrag = [208.6574,331.1135,317.3044,332.7711,332.7711,327.5385,333.1927,329.3799,342.0099,386.6636,375.2506,417.6381,429.8593,420.2561,420.2561,422.1926,435.016,470.6337,484.411,523.7687,531.1628];
-    const origLD = origLift.map((l,i)=> l/origDrag[i]);
-    const curveLift = [676.3509,626.3158,633.0978,682.6926,762.7173,862.41,972.6303,1085.8587,1196.1973,1299.3692,1392.7186,1475.2112,1547.4338,1611.5942,1671.5219,1732.6672,1802.1018,1888.5186,2002.2317,2155.1764,2360.9093];
-    const curveDrag = [271.2634,301.6784,325.2149,343.2599,357.0799,367.82,376.5048,384.0377,391.2014,398.6577,406.9472,416.4899,427.5849,440.4102,455.0229,471.3594,489.235,508.3441,528.2604,548.4365,568.2042];
-    const curveLD = curveLift.map((l,i)=> l/curveDrag[i]);
+    // Traditional wing in landing/take-off configuration
+    const tradLift = [227.6583,311.9323,341.8096,315.7099,315.7099,327.6084,353.5486,417.5111,502.7724,601.0037,615.5571,683.7336,705.7336,693.3024,693.3024,688.0409,730.1839,787.9849,898.5633,972.0705,976.3989];
+    const tradDrag = [208.6574,331.1135,317.3044,332.7711,332.7711,327.5385,333.1927,329.3799,342.0099,386.6636,375.2506,417.6381,429.8593,420.2561,420.2561,422.1926,435.016,470.6337,484.411,523.7687,531.1628];
+    const tradLD = tradLift.map((l,i)=> l/tradDrag[i]);
+    // Chicxulub in landing/take-off configuration
+    const chicxLift = [676.3509,626.3158,633.0978,682.6926,762.7173,862.41,972.6303,1085.8587,1196.1973,1299.3692,1392.7186,1475.2112,1547.4338,1611.5942,1671.5219,1732.6672,1802.1018,1888.5186,2002.2317,2155.1764,2360.9093];
+    const chicxDrag = [271.2634,301.6784,325.2149,343.2599,357.0799,367.82,376.5048,384.0377,391.2014,398.6577,406.9472,416.4899,427.5849,440.4102,455.0229,471.3594,489.235,508.3441,528.2604,548.4365,568.2042];
+    const chicxLD = chicxLift.map((l,i)=> l/chicxDrag[i]);
 
     const metrics = {
-      Lift: { orig: origLift,  curve: curveLift,  label: 'LIFT (N)',  digits: 1 },
-      Drag: { orig: origDrag,  curve: curveDrag,  label: 'DRAG (N)',  digits: 1 },
-      LD:   { orig: origLD,    curve: curveLD,    label: 'L / D RATIO', digits: 3 }
+      Lift: { a: chicxLift, b: tradLift, label: 'LIFT (N)',    digits: 1 },
+      Drag: { a: chicxDrag, b: tradDrag, label: 'DRAG (N)',    digits: 1 },
+      LD:   { a: chicxLD,   b: tradLD,   label: 'L / D RATIO', digits: 3 }
     };
 
-    const COLOR_ORIG = '#7BA7D9';
-    const COLOR_CURVE = '#E94F1D';
+    const COLOR_A = '#E94F1D'; // Chicxulub — primary (solid, thicker)
+    const COLOR_B = '#7BA7D9'; // Traditional — secondary (dashed)
 
     const svg = document.getElementById('perfChart');
     const tooltip = document.getElementById('chartTooltip');
@@ -2552,7 +2554,7 @@
 
     function renderChart(tab) {
       const m = metrics[tab];
-      const all = m.orig.concat(m.curve);
+      const all = m.a.concat(m.b);
       let min = Math.min.apply(null, all);
       let max = Math.max.apply(null, all);
       const pad = (max - min) * 0.08;
@@ -2579,20 +2581,18 @@
       html += '<line x1="'+M.left+'" y1="'+M.top+'" x2="'+M.left+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
       html += '<line x1="'+M.left+'" y1="'+(H-M.bottom)+'" x2="'+(W-M.right)+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
 
-      let origPath = '';
-      m.orig.forEach(function(v, i){ origPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
-      html += '<path d="'+origPath+'" fill="none" stroke="'+COLOR_ORIG+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+      // Traditional (dashed, secondary)
+      let bPath = '';
+      m.b.forEach(function(v, i){ bPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+bPath+'" fill="none" stroke="'+COLOR_B+'" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round"/>';
 
-      let curvePath = '';
-      m.curve.forEach(function(v, i){ curvePath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
-      html += '<path d="'+curvePath+'" fill="none" stroke="'+COLOR_CURVE+'" stroke-width="2.5" stroke-dasharray="7 4" stroke-linejoin="round" stroke-linecap="round"/>';
+      // Chicxulub (solid, primary, thicker)
+      let aPath = '';
+      m.a.forEach(function(v, i){ aPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+aPath+'" fill="none" stroke="'+COLOR_A+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>';
 
-      m.orig.forEach(function(v, i){
-        html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="3" fill="'+COLOR_ORIG+'"/>';
-      });
-      m.curve.forEach(function(v, i){
-        html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="3" fill="'+COLOR_CURVE+'"/>';
-      });
+      m.b.forEach(function(v, i){ html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="2.5" fill="'+COLOR_B+'"/>'; });
+      m.a.forEach(function(v, i){ html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="3.2" fill="'+COLOR_A+'"/>'; });
 
       html += '<line id="chartTracker" x1="0" y1="'+M.top+'" x2="0" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.25)" stroke-width="1" opacity="0"/>';
       html += '<rect id="chartHoverRect" x="'+M.left+'" y="'+M.top+'" width="'+plotW+'" height="'+plotH+'" fill="transparent" style="cursor: crosshair;"/>';
@@ -2621,8 +2621,8 @@
         const d = tab === 'LD' ? 3 : 1;
         tooltip.innerHTML =
           '<div class="t-angle">α = '+angles[idx]+'°</div>'+
-          '<div class="t-row" style="color:'+COLOR_ORIG+'">BASELINE &nbsp; <b>'+m.orig[idx].toFixed(d)+'</b></div>'+
-          '<div class="t-row" style="color:'+COLOR_CURVE+'">CHICXULUB &nbsp; <b>'+m.curve[idx].toFixed(d)+'</b></div>';
+          '<div class="t-row" style="color:'+COLOR_A+'">CHICXULUB &nbsp; <b>'+m.a[idx].toFixed(d)+'</b></div>'+
+          '<div class="t-row" style="color:'+COLOR_B+'">TRADITIONAL &nbsp; <b>'+m.b[idx].toFixed(d)+'</b></div>';
         tooltip.classList.add('visible');
         const tw = tooltip.offsetWidth;
         let tx = displayX + 14;
@@ -2642,14 +2642,14 @@
 
     function renderStats(tab) {
       const m = metrics[tab];
-      const maxO = Math.max.apply(null, m.orig);
-      const maxC = Math.max.apply(null, m.curve);
+      const maxA = Math.max.apply(null, m.a);
+      const maxB = Math.max.apply(null, m.b);
       const d = tab === 'LD' ? 2 : 1;
-      const ratio = (maxC / maxO).toFixed(2);
+      const ratio = (maxA / maxB).toFixed(2);
       statsEl.innerHTML =
-        '<div class="chart-stat orig"><div class="s-lbl">Peak · Baseline</div><div class="s-val">'+maxO.toFixed(d)+'</div></div>'+
-        '<div class="chart-stat"><div class="s-lbl">Peak · Chicxulub</div><div class="s-val">'+maxC.toFixed(d)+'</div></div>'+
-        '<div class="chart-stat ratio"><div class="s-lbl">Gain Factor</div><div class="s-val">×'+ratio+'</div></div>';
+        '<div class="chart-stat"><div class="s-lbl">Peak · Chicxulub</div><div class="s-val">'+maxA.toFixed(d)+'</div></div>'+
+        '<div class="chart-stat orig"><div class="s-lbl">Peak · Traditional</div><div class="s-val">'+maxB.toFixed(d)+'</div></div>'+
+        '<div class="chart-stat ratio"><div class="s-lbl">Chicxulub vs Traditional</div><div class="s-val">×'+ratio+'</div></div>';
     }
 
     function renderTable() {
@@ -2658,18 +2658,18 @@
         const zero = a === 0 ? ' class="zero"' : '';
         rows += '<tr'+zero+'>'+
           '<td class="sep">'+a+'°</td>'+
-          '<td>'+origLift[i].toFixed(1)+'</td>'+
-          '<td>'+origDrag[i].toFixed(1)+'</td>'+
-          '<td class="sep">'+origLD[i].toFixed(3)+'</td>'+
-          '<td>'+curveLift[i].toFixed(1)+'</td>'+
-          '<td>'+curveDrag[i].toFixed(1)+'</td>'+
-          '<td>'+curveLD[i].toFixed(3)+'</td>'+
+          '<td>'+chicxLift[i].toFixed(1)+'</td>'+
+          '<td>'+chicxDrag[i].toFixed(1)+'</td>'+
+          '<td class="sep">'+chicxLD[i].toFixed(3)+'</td>'+
+          '<td>'+tradLift[i].toFixed(1)+'</td>'+
+          '<td>'+tradDrag[i].toFixed(1)+'</td>'+
+          '<td>'+tradLD[i].toFixed(3)+'</td>'+
           '</tr>';
       });
       tableEl.innerHTML =
         '<table>'+
         '<thead>'+
-          '<tr><th rowspan="2" class="sep">α</th><th colspan="3" class="orig-head">Conventional Baseline</th><th colspan="3" class="curve-head">Chicxulub</th></tr>'+
+          '<tr><th rowspan="2" class="sep">α</th><th colspan="3" style="color:#E94F1D;border-bottom:2px solid #E94F1D;text-align:center;">Chicxulub</th><th colspan="3" style="color:#7BA7D9;border-bottom:2px solid #7BA7D9;text-align:center;">Traditional</th></tr>'+
           '<tr><th>Lift (N)</th><th>Drag (N)</th><th class="sep">L/D</th><th>Lift (N)</th><th>Drag (N)</th><th>L/D</th></tr>'+
         '</thead>'+
         '<tbody>'+rows+'</tbody>'+
