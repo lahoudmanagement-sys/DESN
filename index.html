@@ -770,6 +770,102 @@
     color: var(--text-muted);
   }
 
+  /* ============ DEVELOPMENT SECTION ============ */
+  .dev-section {
+    position: relative;
+  }
+  .dev-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    margin-top: 70px;
+  }
+  .dev-block {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .dev-block.reverse .dev-visual { order: 2; }
+  .dev-block.reverse .dev-copy { order: 1; }
+  .dev-visual {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(135deg, var(--bg-lift), var(--bg));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .dev-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .dev-visual .dev-placeholder {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: center;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  .dev-visual .dev-placeholder span {
+    display: block;
+    color: var(--fire);
+    font-size: 9px;
+    margin-bottom: 6px;
+  }
+  .dev-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--fire);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    padding: 6px 12px;
+    border: 1px solid var(--fire);
+    border-radius: 2px;
+  }
+  .dev-block:nth-child(2) .dev-tag {
+    color: var(--amber);
+    border-color: var(--amber);
+  }
+  .dev-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: clamp(28px, 3vw, 42px);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  .dev-title em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    text-transform: none;
+    background: linear-gradient(180deg, var(--fire), var(--amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .dev-copy p {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    max-width: 540px;
+    margin: 0;
+  }
+
   /* ============ PERFORMANCE DATA ============ */
   .perf-section {
     background: linear-gradient(180deg, var(--bg) 0%, var(--bg-lift) 50%, var(--bg) 100%);
@@ -777,7 +873,7 @@
 
   .perf-intro {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 2px;
     background: var(--border);
     margin: 50px 0 20px;
@@ -785,19 +881,21 @@
   .perf-intro-card {
     background: var(--bg);
     padding: 32px 36px;
-    border-top: 2px solid var(--amber);
+    border-top: 2px solid #7BA7D9;
     position: relative;
   }
   .perf-intro-card:nth-child(2) { border-top-color: var(--fire); }
+  .perf-intro-card:nth-child(3) { border-top-color: var(--amber); }
   .perf-intro-num {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.28em;
-    color: var(--amber);
+    color: #7BA7D9;
     text-transform: uppercase;
     margin-bottom: 14px;
   }
   .perf-intro-card:nth-child(2) .perf-intro-num { color: var(--fire); }
+  .perf-intro-card:nth-child(3) .perf-intro-num { color: var(--amber); }
   .perf-intro-card h3 {
     font-family: 'Unbounded', sans-serif;
     font-weight: 600;
@@ -834,16 +932,20 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.3em;
-    color: var(--amber);
+    color: #7BA7D9;
     text-transform: uppercase;
     margin-bottom: 18px;
     padding: 6px 12px;
-    border: 1px solid var(--amber);
+    border: 1px solid #7BA7D9;
     border-radius: 2px;
   }
   .perf-block-tag.alt {
     color: var(--fire);
     border-color: var(--fire);
+  }
+  .perf-block-tag.ideal {
+    color: var(--amber);
+    border-color: var(--amber);
   }
   .perf-block-title {
     font-family: 'Unbounded', sans-serif;
@@ -1536,10 +1638,12 @@
   }
 
   @media (max-width: 900px) {
-    .wing-compare, .arch, .impact-grid, .stats-grid {
+    .wing-compare, .arch, .impact-grid, .stats-grid, .dev-block, .dev-block.reverse {
       grid-template-columns: 1fr;
     }
     .arch { gap: 40px; }
+    .dev-block.reverse .dev-visual { order: 0; }
+    .dev-block.reverse .dev-copy { order: 0; }
     .hero-meta { flex-direction: column; gap: 20px; }
     nav { padding: 16px 20px; }
     section { padding: 100px 24px; }
@@ -1593,6 +1697,17 @@
     .arch-visual { padding: 24px; }
     .arch-feature { padding: 28px 22px; }
     .arch-feature-title { font-size: 19px; }
+
+    /* Development */
+    .dev-stack { gap: 40px; margin-top: 40px; }
+    .dev-block, .dev-block.reverse {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .dev-block.reverse .dev-visual { order: 0; }
+    .dev-block.reverse .dev-copy { order: 0; }
+    .dev-title { font-size: clamp(22px, 7vw, 30px); }
+    .dev-copy p { font-size: 16px; }
 
     /* Performance */
     .perf-intro-card { padding: 28px 24px; }
@@ -1651,6 +1766,7 @@
   <div class="progress-dot" data-target="#problem"></div>
   <div class="progress-dot" data-target="#wings"></div>
   <div class="progress-dot" data-target="#reveal"></div>
+  <div class="progress-dot" data-target="#development"></div>
   <div class="progress-dot" data-target="#architecture"></div>
   <div class="progress-dot" data-target="#performance"></div>
   <div class="progress-dot" data-target="#impact"></div>
@@ -1673,10 +1789,11 @@
       <li data-target="#problem"><span class="nav-num">01</span><span class="nav-label">The Problem</span><span class="nav-sublabel">$25B burned annually</span></li>
       <li data-target="#wings"><span class="nav-num">02</span><span class="nav-label">Wing Comparison</span><span class="nav-sublabel">Conventional vs. Chicxulub</span></li>
       <li data-target="#reveal"><span class="nav-num">03</span><span class="nav-label">Chicxulub</span><span class="nav-sublabel">Why the name</span></li>
-      <li data-target="#architecture"><span class="nav-num">04</span><span class="nav-label">Architecture</span><span class="nav-sublabel">Hybrid axle + spine</span></li>
-      <li data-target="#performance"><span class="nav-num">05</span><span class="nav-label">Performance Data</span><span class="nav-sublabel">Wind tunnel + curve-fit</span></li>
-      <li data-target="#impact"><span class="nav-num">06</span><span class="nav-label">Real-World Impact</span><span class="nav-sublabel">Beyond aerodynamics</span></li>
-      <li data-target="#closer"><span class="nav-num">07</span><span class="nav-label">Closer</span><span class="nav-sublabel">The end of rigid flight</span></li>
+      <li data-target="#development"><span class="nav-num">04</span><span class="nav-label">Development</span><span class="nav-sublabel">Fishbone to flight</span></li>
+      <li data-target="#architecture"><span class="nav-num">05</span><span class="nav-label">Architecture</span><span class="nav-sublabel">Hybrid axle + spine</span></li>
+      <li data-target="#performance"><span class="nav-num">06</span><span class="nav-label">Performance Data</span><span class="nav-sublabel">Three comparisons</span></li>
+      <li data-target="#impact"><span class="nav-num">07</span><span class="nav-label">Real-World Impact</span><span class="nav-sublabel">Beyond aerodynamics</span></li>
+      <li data-target="#closer"><span class="nav-num">08</span><span class="nav-label">Closer</span><span class="nav-sublabel">The end of rigid flight</span></li>
     </ul>
   </div>
 </div>
@@ -1921,6 +2038,47 @@
   </p>
 </section>
 
+<!-- ===== DEVELOPMENT ===== -->
+<section class="dev-section" id="development">
+  <div class="eyebrow reveal-on-scroll">THE DEVELOPMENT</div>
+  <h2 class="section-title reveal-on-scroll">From fishbone to <em>flight.</em></h2>
+  <p class="hero-sub reveal-on-scroll" style="margin-top:0;">Every breakthrough has a backstory. Here's ours — the baseline we set out to beat, and the prototypes that got us there.</p>
+
+  <div class="dev-stack">
+    <!-- DEV-01 / Baseline + Goal -->
+    <div class="dev-block reveal-on-scroll">
+      <div class="dev-visual">
+        <img src="dev-baseline.png" alt="Standard fishbone-wing baseline reference" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+        <div class="dev-placeholder" style="display:none;">
+          <span>FIG · 02 / BASELINE</span>
+          fishbone wing<br/>reference photo
+        </div>
+      </div>
+      <div class="dev-copy">
+        <div class="dev-tag">01 · BASELINE + GOAL</div>
+        <h3 class="dev-title">Improve <em>the fishbone.</em></h3>
+        <p>Presented with a standard fish-bone model, we aimed to improve on its failings — namely the reliability and longevity of the design's high-stress bending motion. By disruptively innovating upon this design, we hoped to achieve a performance peak equal to that of a perfect NACA&nbsp;2415 profile in the wind tunnel and better than a traditional flap wing.</p>
+      </div>
+    </div>
+
+    <!-- DEV-02 / Prototypes -->
+    <div class="dev-block reverse reveal-on-scroll">
+      <div class="dev-visual">
+        <img src="2415_V1-3.jpg" alt="Prototype versions V1–V3 showing manufacturing and design progression" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+        <div class="dev-placeholder" style="display:none;">
+          <span>FIG · 03 / PROTOTYPES</span>
+          prototype iteration<br/>photo
+        </div>
+      </div>
+      <div class="dev-copy">
+        <div class="dev-tag">02 · PROTOTYPES</div>
+        <h3 class="dev-title">Iterate. Streamline. <em>Lift.</em></h3>
+        <p>Prototypes explored manufacturing, actuation and overall design choices. Iteration allowed us to streamline manufacturing and modularity of the system, form an actuation system that sat within the performant 2415 profile, and improve the morphing capability of the wing whilst drastically reducing weight.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===== ARCHITECTURE ===== -->
 <section id="architecture">
   <div class="eyebrow reveal-on-scroll">THE HYBRID ARCHITECTURE</div>
@@ -1957,9 +2115,9 @@
 <!-- ===== PERFORMANCE DATA ===== -->
 <section class="perf-section" id="performance">
   <div class="eyebrow reveal-on-scroll">PERFORMANCE / THE EVIDENCE</div>
-  <h2 class="section-title reveal-on-scroll">Chicxulub vs <em>Traditional.</em></h2>
+  <h2 class="section-title reveal-on-scroll">Three comparisons. <em>One conclusion.</em></h2>
   <p class="hero-sub reveal-on-scroll" style="margin-top:0;">
-    Two flight configurations. Same wing, same test rig — measured side-by-side against a traditional wing.
+    Two configurations against a traditional wing, plus a head-to-head against a theoretically perfect NACA 2415 profile. Twenty-one angles of attack, every time.
   </p>
 
   <div class="perf-intro reveal-on-scroll">
@@ -1972,6 +2130,11 @@
       <div class="perf-intro-num">02 · HIGH-LIFT</div>
       <h3>Landing / Take-off Configuration</h3>
       <p>Chicxulub vs. traditional, both wings reconfigured for the high-lift regime used during landing and take-off. Same 21-angle sweep.</p>
+    </div>
+    <div class="perf-intro-card">
+      <div class="perf-intro-num">03 · IDEAL</div>
+      <h3>Vs. Perfect NACA 2415</h3>
+      <p>Chicxulub in its highest-drag morphed setup, measured against a theoretically perfect NACA 2415 airfoil — the academic gold-standard reference shape.</p>
     </div>
   </div>
 
@@ -2034,6 +2197,37 @@
 
     <div class="chart-stats" id="chartStats"></div>
     <div class="chart-table" id="chartTable" hidden></div>
+  </div>
+
+  <!-- =============== DATASET 03 · VS. PERFECT NACA 2415 PROFILE =============== -->
+  <div class="perf-block reveal-on-scroll" id="naca-block">
+    <div class="perf-block-header">
+      <div class="perf-block-tag ideal">DATASET 03 · IDEAL PROFILE</div>
+      <h3 class="perf-block-title">Versus a perfect <em>2415.</em></h3>
+      <p class="perf-block-desc">Despite running in its highest-drag morphed setup, Chicxulub still outperforms the theoretically perfect NACA 2415 profile across most of the envelope — and consistently produces nearly double the lift.</p>
+    </div>
+
+    <div class="chart-legend">
+      <span><i style="background:#E94F1D"></i>Chicxulub · High-Drag</span>
+      <span><i class="dashed" style="color:#F5B041"></i>Perfect NACA 2415</span>
+    </div>
+
+    <div class="chart-tabs">
+      <button data-tab="Lift">Lift</button>
+      <button data-tab="Drag">Drag</button>
+      <button data-tab="LD" class="active">L / D</button>
+      <button data-tab="Table">Table</button>
+    </div>
+
+    <div class="chart-wrap" id="nacaWrap">
+      <svg id="nacaChart" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="chart-label" id="nacaLabel">L / D RATIO</div>
+      <div class="chart-tooltip" id="nacaTooltip"></div>
+    </div>
+
+    <div class="chart-stats" id="nacaStats"></div>
+    <div class="chart-callout" id="nacaCallout"></div>
+    <div class="chart-table" id="nacaTable" hidden></div>
   </div>
 </section>
 
@@ -2193,7 +2387,7 @@
 
   // ============ PROGRESS NAV + MODAL ============
   const dots = document.querySelectorAll('.progress-dot');
-  const sections = ['hero', 'problem', 'wings', 'reveal', 'architecture', 'performance', 'impact', 'closer'].map(id => document.getElementById(id));
+  const sections = ['hero', 'problem', 'wings', 'reveal', 'development', 'architecture', 'performance', 'impact', 'closer'].map(id => document.getElementById(id));
   const navModal = document.getElementById('navModal');
   const navItems = document.querySelectorAll('.nav-modal-list li');
   const progressEl = document.querySelector('.progress');
@@ -2621,6 +2815,226 @@
     });
 
     renderChart('Lift');
+  })();
+
+  // ============ NACA 2415 CHART (DATASET 03 · IDEAL PROFILE) ============
+  (function(){
+    const angles = [-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+    // Chicxulub — same curve-fit data as Dataset 02 (high-drag morphed configuration)
+    const chicxLift = [676.3509,626.3158,633.0978,682.6926,762.7173,862.41,972.6303,1085.8587,1196.1973,1299.3692,1392.7186,1475.2112,1547.4338,1611.5942,1671.5219,1732.6672,1802.1018,1888.5186,2002.2317,2155.1764,2360.9093];
+    const chicxDrag = [271.2634,301.6784,325.2149,343.2599,357.0799,367.82,376.5048,384.0377,391.2014,398.6577,406.9472,416.4899,427.5849,440.4102,455.0229,471.3594,489.235,508.3441,528.2604,548.4365,568.2042];
+    const chicxLD   = [2.493336,2.076104,1.946706,1.98885,2.135985,2.344652,2.583315,2.827479,3.057753,3.259361,3.422357,3.542009,3.619009,3.659303,3.67349,3.675894,3.68351,3.71504,3.790236,3.929673,4.155037];
+    // Theoretically-perfect NACA 2415 profile
+    const idealLift = [-452.2615356,-387.8686218,-387.8686218,-257.8757324,-215.2872467,-79.15397644,-15.26973057,67.38788605,223.248703,327.7017212,427.459137,427.459137,500.5329285,547.5401001,627.5549316,707.6570435,796.1209717,881.406311,1009.000183,1085.264526,1085.264526];
+    const idealDrag = [252.6201782,222.1305389,222.1305389,165.9719543,141.1587219,131.1624298,139.0257111,114.1871338,98.05488586,114.2378387,112.003418,112.003418,128.7727051,122.0694275,143.8590546,161.7629852,190.0403748,155.8203735,178.307251,207.0600433,207.0600433];
+    const idealLD   = [-1.790282704,-1.746129207,-1.746129207,-1.55373077,-1.525143071,-0.603480559,-0.109833861,0.590153057,2.276772861,2.868591745,3.816482967,3.816482967,3.886948932,4.48548102,4.362290115,4.37465371,4.189220173,5.656553704,5.658772583,5.241303483,5.241303483];
+
+    const metrics = {
+      Lift: { a: chicxLift, b: idealLift, label: 'LIFT (N)',         digits: 1 },
+      Drag: { a: chicxDrag, b: idealDrag, label: 'DRAG (N)',         digits: 1 },
+      LD:   { a: chicxLD,   b: idealLD,   label: 'L / D RATIO',      digits: 3 }
+    };
+
+    const callouts = {
+      Lift: 'Chicxulub generates <b>nearly 2× the lift</b> of the perfect 2415 profile across the entire AoA range — and produces positive lift well below 0°, where the ideal still pushes downward.',
+      Drag: 'Even in its high-drag morphed configuration, Chicxulub stays <b>competitive with the ideal</b> — and beats it cleanly at high angles of attack.',
+      LD:   'The perfect 2415 takes peak L/D — but Chicxulub matches or beats it at the <b>low-to-mid angles where aircraft actually fly</b>, despite running its high-drag setup.'
+    };
+
+    const COLOR_A = '#E94F1D'; // Chicxulub
+    const COLOR_B = '#F5B041'; // Perfect 2415 — amber as the "gold standard"
+
+    const svg = document.getElementById('nacaChart');
+    const tooltip = document.getElementById('nacaTooltip');
+    const chartLabel = document.getElementById('nacaLabel');
+    const statsEl = document.getElementById('nacaStats');
+    const calloutEl = document.getElementById('nacaCallout');
+    const tableEl = document.getElementById('nacaTable');
+    const wrapEl = document.getElementById('nacaWrap');
+
+    const W = 800, H = 400;
+    const M = { top: 24, right: 30, bottom: 54, left: 70 };
+    const plotW = W - M.left - M.right;
+    const plotH = H - M.top - M.bottom;
+
+    const xScale = (i) => M.left + (i / (angles.length - 1)) * plotW;
+    const yScale = (v, min, max) => M.top + (1 - (v - min) / (max - min)) * plotH;
+
+    function renderChart(tab) {
+      const m = metrics[tab];
+      const all = m.a.concat(m.b);
+      let min = Math.min.apply(null, all);
+      let max = Math.max.apply(null, all);
+      const pad = (max - min) * 0.1;
+      min = min - pad;
+      max = max + pad;
+
+      let html = '';
+      const yTicks = 5;
+      for (let i = 0; i <= yTicks; i++) {
+        const y = M.top + (i / yTicks) * plotH;
+        const val = max - (i / yTicks) * (max - min);
+        html += '<line x1="'+M.left+'" y1="'+y+'" x2="'+(W-M.right)+'" y2="'+y+'" stroke="rgba(248,244,239,0.05)" stroke-dasharray="2,4"/>';
+        html += '<text x="'+(M.left-14)+'" y="'+(y+4)+'" text-anchor="end" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="11">'+val.toFixed(tab==='LD'?2:0)+'</text>';
+      }
+      // Zero reference line
+      if (min < 0 && max > 0) {
+        const zeroY = yScale(0, min, max);
+        html += '<line x1="'+M.left+'" y1="'+zeroY+'" x2="'+(W-M.right)+'" y2="'+zeroY+'" stroke="rgba(248,244,239,0.18)" stroke-dasharray="4 3"/>';
+        html += '<text x="'+(W-M.right-6)+'" y="'+(zeroY-5)+'" text-anchor="end" fill="#8B847D" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1">0</text>';
+      }
+
+      angles.forEach(function(a, i){
+        if (a % 5 === 0) {
+          const x = xScale(i);
+          html += '<line x1="'+x+'" y1="'+M.top+'" x2="'+x+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.04)" stroke-dasharray="2,4"/>';
+          html += '<text x="'+x+'" y="'+(H-M.bottom+22)+'" text-anchor="middle" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="11">'+a+'°</text>';
+        }
+      });
+      html += '<text x="'+(M.left + plotW/2)+'" y="'+(H-10)+'" text-anchor="middle" fill="#4A463F" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="2">ANGLE OF ATTACK</text>';
+
+      html += '<line x1="'+M.left+'" y1="'+M.top+'" x2="'+M.left+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
+      html += '<line x1="'+M.left+'" y1="'+(H-M.bottom)+'" x2="'+(W-M.right)+'" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.15)" stroke-width="1"/>';
+
+      // Perfect 2415 (dashed amber)
+      let bPath = '';
+      m.b.forEach(function(v, i){ bPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+bPath+'" fill="none" stroke="'+COLOR_B+'" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round"/>';
+
+      // Chicxulub (solid fire)
+      let aPath = '';
+      m.a.forEach(function(v, i){ aPath += (i===0?'M':'L') + xScale(i) + ' ' + yScale(v, min, max); });
+      html += '<path d="'+aPath+'" fill="none" stroke="'+COLOR_A+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>';
+
+      // Dots — 2415 turns red when value goes negative (visual cue)
+      m.b.forEach(function(v, i){
+        const fill = v < 0 ? '#f87171' : COLOR_B;
+        html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="2.5" fill="'+fill+'"/>';
+      });
+      m.a.forEach(function(v, i){ html += '<circle cx="'+xScale(i)+'" cy="'+yScale(v, min, max)+'" r="3.2" fill="'+COLOR_A+'"/>'; });
+
+      html += '<line id="nacaTracker" x1="0" y1="'+M.top+'" x2="0" y2="'+(H-M.bottom)+'" stroke="rgba(248,244,239,0.25)" stroke-width="1" opacity="0"/>';
+      html += '<rect id="nacaHoverRect" x="'+M.left+'" y="'+M.top+'" width="'+plotW+'" height="'+plotH+'" fill="transparent" style="cursor: crosshair;"/>';
+
+      svg.innerHTML = html;
+      chartLabel.textContent = m.label;
+      calloutEl.innerHTML = callouts[tab];
+
+      renderStats(tab);
+
+      const hoverRect = document.getElementById('nacaHoverRect');
+      const tracker = document.getElementById('nacaTracker');
+
+      function onMove(clientX, clientY) {
+        const svgRect = svg.getBoundingClientRect();
+        const scale = W / svgRect.width;
+        const x = (clientX - svgRect.left) * scale;
+        const t = (x - M.left) / plotW;
+        const idx = Math.max(0, Math.min(angles.length - 1, Math.round(t * (angles.length - 1))));
+        const snapX = xScale(idx);
+        tracker.setAttribute('x1', snapX);
+        tracker.setAttribute('x2', snapX);
+        tracker.setAttribute('opacity', '1');
+
+        const wrapRect = wrapEl.getBoundingClientRect();
+        const displayX = (snapX / W) * svgRect.width + (svgRect.left - wrapRect.left);
+        const d = tab === 'LD' ? 3 : 1;
+        tooltip.innerHTML =
+          '<div class="t-angle">α = '+angles[idx]+'°</div>'+
+          '<div class="t-row" style="color:'+COLOR_A+'">CHICXULUB &nbsp; <b>'+m.a[idx].toFixed(d)+'</b></div>'+
+          '<div class="t-row" style="color:'+COLOR_B+'">PERFECT 2415 &nbsp; <b>'+m.b[idx].toFixed(d)+'</b></div>';
+        tooltip.classList.add('visible');
+        const tw = tooltip.offsetWidth;
+        let tx = displayX + 14;
+        if (tx + tw > wrapRect.width - 12) tx = displayX - tw - 14;
+        tooltip.style.left = tx + 'px';
+        tooltip.style.top = (clientY - wrapRect.top - 10) + 'px';
+      }
+
+      hoverRect.addEventListener('mousemove', function(e){ onMove(e.clientX, e.clientY); });
+      hoverRect.addEventListener('touchstart', function(e){ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+      hoverRect.addEventListener('touchmove', function(e){ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+      hoverRect.addEventListener('mouseleave', function(){
+        tracker.setAttribute('opacity', '0');
+        tooltip.classList.remove('visible');
+      });
+    }
+
+    function renderStats(tab) {
+      const m = metrics[tab];
+      const maxA = Math.max.apply(null, m.a);
+      const maxB = Math.max.apply(null, m.b);
+      const peakAngleA = angles[m.a.indexOf(maxA)];
+      const peakAngleB = angles[m.b.indexOf(maxB)];
+      const avgA = (m.a.reduce(function(s,v){return s+v;},0) / m.a.length);
+      const avgB = (m.b.reduce(function(s,v){return s+v;},0) / m.b.length);
+      const d = tab === 'LD' ? 2 : 1;
+
+      statsEl.innerHTML =
+        '<div class="chart-stat"><div class="s-lbl">Avg · Chicxulub</div><div class="s-val">'+avgA.toFixed(d)+'</div><div class="s-lbl" style="margin-top:6px;color:var(--text-dim)">all 21 angles</div></div>'+
+        '<div class="chart-stat ratio"><div class="s-lbl">Avg · Perfect 2415</div><div class="s-val">'+avgB.toFixed(d)+'</div><div class="s-lbl" style="margin-top:6px;color:var(--text-dim)">all 21 angles</div></div>'+
+        '<div class="chart-stat"><div class="s-lbl">Peak · Chicxulub</div><div class="s-val">'+maxA.toFixed(d)+'</div><div class="s-lbl" style="margin-top:6px;color:var(--text-dim)">at α = '+peakAngleA+'°</div></div>'+
+        '<div class="chart-stat ratio"><div class="s-lbl">Peak · Perfect 2415</div><div class="s-val">'+maxB.toFixed(d)+'</div><div class="s-lbl" style="margin-top:6px;color:var(--text-dim)">at α = '+peakAngleB+'°</div></div>';
+    }
+
+    function renderTable() {
+      let rows = '';
+      angles.forEach(function(a, i){
+        const dLift = idealLift[i] - chicxLift[i];
+        const dDrag = idealDrag[i] - chicxDrag[i];
+        const dLD = idealLD[i] - chicxLD[i];
+        const zero = a === 0 ? ' class="zero"' : '';
+        rows += '<tr'+zero+'>'+
+          '<td class="sep">'+a+'°</td>'+
+          '<td>'+chicxLift[i].toFixed(2)+'</td>'+
+          '<td>'+chicxDrag[i].toFixed(2)+'</td>'+
+          '<td class="sep" style="color:#E94F1D;font-weight:600">'+chicxLD[i].toFixed(3)+'</td>'+
+          '<td style="color:'+(idealLift[i]<0?'#f87171':'var(--text-muted)')+'">'+idealLift[i].toFixed(2)+'</td>'+
+          '<td>'+idealDrag[i].toFixed(2)+'</td>'+
+          '<td class="sep" style="color:'+(idealLD[i]<0?'#f87171':'#F5B041')+';font-weight:600">'+idealLD[i].toFixed(3)+'</td>'+
+          '<td style="color:'+(dLift>=0?'#34d399':'#f87171')+'">'+(dLift>0?'+':'')+dLift.toFixed(2)+'</td>'+
+          '<td style="color:'+(dDrag<=0?'#34d399':'#f87171')+'">'+(dDrag>0?'+':'')+dDrag.toFixed(2)+'</td>'+
+          '<td style="color:'+(dLD>=0?'#34d399':'#f87171')+';font-weight:600">'+(dLD>0?'+':'')+dLD.toFixed(3)+'</td>'+
+          '</tr>';
+      });
+      tableEl.innerHTML =
+        '<table>'+
+        '<thead>'+
+          '<tr><th rowspan="2" class="sep">α</th>'+
+            '<th colspan="3" style="color:#E94F1D;border-bottom:2px solid #E94F1D;text-align:center;">Chicxulub</th>'+
+            '<th colspan="3" style="color:#F5B041;border-bottom:2px solid #F5B041;text-align:center;">Perfect 2415</th>'+
+            '<th colspan="3" style="color:#a78bfa;border-bottom:2px solid #a78bfa;text-align:center;">Δ (P2415 − Chicx)</th>'+
+          '</tr>'+
+          '<tr><th>Lift (N)</th><th>Drag (N)</th><th class="sep">L/D</th>'+
+              '<th>Lift (N)</th><th>Drag (N)</th><th class="sep">L/D</th>'+
+              '<th>ΔLift</th><th>ΔDrag</th><th>ΔL/D</th></tr>'+
+        '</thead>'+
+        '<tbody>'+rows+'</tbody>'+
+        '</table>'+
+        '<div style="padding:14px 18px;border-top:1px solid var(--border);font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.15em;text-transform:uppercase;">Δ green = 2415 wins  ·  Δ red = Chicxulub wins  (lift uses inverse rule for drag)</div>';
+    }
+
+    document.querySelectorAll('#naca-block .chart-tabs button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('#naca-block .chart-tabs button').forEach(function(b){ b.classList.toggle('active', b === btn); });
+        if (tab === 'Table') {
+          wrapEl.hidden = true;
+          statsEl.hidden = true;
+          calloutEl.hidden = true;
+          tableEl.hidden = false;
+          if (!tableEl.dataset.rendered) { renderTable(); tableEl.dataset.rendered = '1'; }
+        } else {
+          wrapEl.hidden = false;
+          statsEl.hidden = false;
+          calloutEl.hidden = false;
+          tableEl.hidden = true;
+          renderChart(tab);
+        }
+      });
+    });
+
+    renderChart('LD');
   })();
 
   // ============ QR BADGE ============

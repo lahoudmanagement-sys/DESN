@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Meteor Dynamics — Scan & Explore (A4 Poster)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #0A0908;
+    --fire: #E94F1D;
+    --amber: #C9972A;
+    --paper: #FDFBF6;
+    --rule: #1A1918;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #2a2a2a;
+    min-height: 100vh;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 300;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 22mm 20mm;
+    margin: 24px auto;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    position: relative;
+  }
+
+  .page::before {
+    content: '';
+    position: absolute;
+    inset: 8mm;
+    border: 1px solid var(--ink);
+    pointer-events: none;
+    opacity: 0.08;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14mm;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    z-index: 1;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .brand-dot {
+    width: 8px; height: 8px;
+    background: var(--fire);
+    border-radius: 50%;
+  }
+  .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    opacity: 0.6;
+    text-align: right;
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12mm 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--fire);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .kicker::before, .kicker::after {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--fire);
+  }
+
+  h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800;
+    font-size: 54px;
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    text-transform: none;
+    color: var(--fire);
+  }
+
+  .tagline {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink);
+    opacity: 0.7;
+    max-width: 480px;
+    line-height: 1.35;
+    margin-bottom: 36px;
+  }
+
+  /* ===== QR ===== */
+  .qr-wrap {
+    position: relative;
+    padding: 14px;
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(10, 9, 8, 0.08);
+  }
+  .qr-wrap img {
+    display: block;
+    width: 260px;
+    height: 260px;
+  }
+  .qr-wrap::before, .qr-wrap::after {
+    content: '';
+    position: absolute;
+    width: 24px; height: 24px;
+    border: 2px solid var(--fire);
+  }
+  .qr-wrap::before {
+    top: -6px; left: -6px;
+    border-right: none;
+    border-bottom: none;
+  }
+  .qr-wrap::after {
+    bottom: -6px; right: -6px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .scan-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-top: 28px;
+    margin-bottom: 4px;
+  }
+  .scan-sub {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink);
+    opacity: 0.65;
+    margin-bottom: 20px;
+  }
+
+  .url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 8px 16px;
+    border-radius: 3px;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 12mm;
+    border-top: 1px solid var(--rule);
+    position: relative;
+    z-index: 1;
+  }
+  .footer-quote {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink);
+    opacity: 0.75;
+    max-width: 130mm;
+    line-height: 1.35;
+  }
+  .footer-quote strong {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    color: var(--fire);
+  }
+  .footer-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: 0.5;
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ===== PRINT INSTRUCTIONS (hidden when printing) ===== */
+  .print-hint {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%);
+    background: #E94F1D;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    z-index: 100;
+  }
+  .print-hint kbd {
+    background: rgba(0,0,0,0.2);
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: inherit;
+  }
+
+  /* ===== PRINT STYLES ===== */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  @media print {
+    html, body { background: white !important; }
+    .page {
+      margin: 0 !important;
+      box-shadow: none !important;
+      width: 210mm;
+      min-height: 297mm;
+      page-break-after: always;
+    }
+    .print-hint { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-hint">
+  Press <kbd>Ctrl</kbd> + <kbd>P</kbd> to print · A4 portrait · 100% scale
+</div>
+
+<div class="page">
+
+  <header>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      METEOR DYNAMICS
+    </div>
+    <div class="meta">
+      PRT—001<br/>
+      CHICXULUB
+    </div>
+  </header>
+
+  <main>
+    <div class="kicker">THE WING THAT ENDS AN ERA</div>
+
+    <h1>
+      Scan.<br/>
+      <em>Explore.</em>
+    </h1>
+
+    <p class="tagline">
+      A morphing wing engineered to make rigid, wasteful flight extinct — and save the aviation industry $25 billion a year.
+    </p>
+
+    <div class="qr-wrap">
+      <img
+        id="qrImage"
+        src="https://api.qrserver.com/v1/create-qr-code/?size=800x800&ecc=H&margin=0&data=https%3A%2F%2Fdesn-1p2t.vercel.app%2F"
+        alt="QR code to desn-1p2t.vercel.app" />
+    </div>
+
+    <div class="scan-label">Scan with your phone camera</div>
+    <div class="scan-sub">Takes you to the full pitch.</div>
+
+    <div class="url">desn-1p2t.vercel.app</div>
+  </main>
+
+  <footer>
+    <div class="footer-quote">
+      We are making the era of rigid, <strong>wasteful flight</strong> extinct.
+    </div>
+    <div class="footer-meta">
+      2026 · SYDNEY, AU<br/>
+      METEOR DYNAMICS
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
