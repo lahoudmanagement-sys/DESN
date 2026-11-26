@@ -9,7 +9,7 @@
   --accent:#E39A2D; --accent-ink:#8A4B04; --on-accent:#1B1404;
   --good:#17754A; --good-bg:#DDF0E3; --bad:#B12A22; --bad-bg:#F8E0DC;
   --paper:#FFFDF6; --paper-ink:#1E1B16; --paper-line:#B9B2A0;
-  --r-base:#E0A04A; --r-sour:#C5D451; --r-sweet:#F0D7A2; --r-bitter:#E27E6C; --r-mod:#C9A0C4; --r-long:#A5CBE0;
+  --r-base:#E0A04A; --r-sour:#C5D451; --r-sweet:#F0D7A2; --r-bitter:#E27E6C; --r-mod:#C9A0C4; --r-long:#A5CBE0; --r-coffee:#B98A5E;
   --font-display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
   --font-body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --font-mono:'DM Mono',ui-monospace,'SF Mono',Menlo,monospace;
@@ -115,6 +115,10 @@ h3{font:600 16px/1.3 var(--font-body)}
 .ratio span{display:grid;place-items:center;min-width:0;font:500 13px/1 var(--font-mono);color:var(--on-accent);white-space:nowrap;overflow:hidden}
 .r-base{background:var(--r-base)} .r-sour{background:var(--r-sour)} .r-sweet{background:var(--r-sweet)}
 .r-bitter{background:var(--r-bitter)} .r-mod{background:var(--r-mod)} .r-long{background:var(--r-long)} .r-herb{background:var(--line)}
+.r-coffee{background:var(--r-coffee)} .r-milk{background:var(--r-sweet)} .r-water{background:var(--r-long)} .r-flav{background:var(--r-mod)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.seg button{min-height:40px;border-radius:10px;text-align:center;font-weight:600;font-size:15px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
 .legend{display:flex;flex-direction:column;gap:6px}
 .legend li{display:flex;align-items:center;gap:10px;font-size:15px}
 .legend i{flex:none;width:12px;height:12px;border-radius:4px}
@@ -172,8 +176,8 @@ button.glass.on{border-color:var(--accent);background:var(--accent);color:var(--
 .gauge .fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);border-radius:99px}
 .secs{font:800 56px/1 var(--font-display);text-align:center;font-variant-numeric:tabular-nums}
 .secs small{font:500 16px/1 var(--font-mono);color:var(--muted)}
-#hold{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;min-height:72px;background:var(--ink);color:var(--bg)}
-#hold.live{background:var(--accent);color:var(--on-accent)}
+.hold{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;min-height:72px;background:var(--ink);color:var(--bg)}
+.hold.live{background:var(--accent);color:var(--on-accent)}
 .garn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .garn button{min-height:50px;padding:8px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);font-size:15px;font-weight:500;line-height:1.2}
 .garn button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
@@ -228,21 +232,35 @@ const ING={
   espresso:['Fresh espresso','mod'],svermouth:['Sweet vermouth','mod'],dvermouth:['Dry vermouth','mod'],cran:['Cranberry juice','mod'],
   campari:['Campari','bitter'],aperol:['Aperol','bitter'],ango:['Angostura bitters','bitter','dash'],
   sparkling:['Sparkling wine','long'],soda:['Soda water','long','top'],tonic:['Tonic water','long','top'],ginger:['Ginger beer','long','top'],gfsoda:['Grapefruit soda','long','top'],
-  mint:['Mint leaves','herb','add'],salt:['Pinch of salt','herb','add']
+  mint:['Mint leaves','herb','add'],salt:['Pinch of salt','herb','add'],
+  shot:['Espresso','coffee','shot'],smilk:['Steamed milk','milk','oz',1,4],cmilk:['Cold milk','milk','oz',1,4],
+  hwater:['Hot water','water','oz',1,4],cwater:['Cold water','water','oz',1,4],ctonic:['Tonic water','water','oz',1,4],
+  choc:['Chocolate sauce','flav','oz',.5,1],chai:['Chai concentrate','flav','oz',1,4],syrup:['Vanilla syrup','flav','oz',.5,1],
+  foam:['Spoonful of milk foam','herb','add'],ice:['Ice','herb','add'],icecream:['Vanilla ice cream','herb','add'],matcha:['Matcha powder','herb','add'],cream:['Whipped cream','herb','add']
 };
+const COF=new Set(['shot','smilk','cmilk','hwater','cwater','ctonic','choc','chai','syrup','foam','ice','icecream','matcha','cream']);
+const ingsFor=t=>Object.keys(ING).filter(x=>COF.has(x)===(t==='coffee'));
 const TWIN={lime:'lemon',lemon:'lime',simple:'honey',honey:'simple',bourbon:'rye',rye:'bourbon',svermouth:'dvermouth',dvermouth:'svermouth',
-  campari:'aperol',aperol:'campari',soda:'tonic',tonic:'soda',wrum:'drum',drum:'wrum',gin:'vodka',vodka:'gin',tequila:'wrum',cognac:'bourbon',ginger:'soda',gfsoda:'tonic'};
-const FAM={sour:'Sours',daisy:'Daisies',stirred:'Stirred and strong',long:'Long and bubbly',other:'One-offs'};
-const GLASS={coupe:'Coupe',rocks:'Rocks',highball:'Highball',flute:'Flute',wine:'Wine glass'};
-const GUSE={coupe:'Stemmed. For drinks served up, with no ice.',rocks:'Short and heavy. Spirit-forward drinks and sours on ice.',highball:'Tall. Long drinks topped with a mixer.',flute:'Narrow, keeps sparkling wine fizzy.',wine:'Big bowl. Spritzes over lots of ice.'};
+  campari:'aperol',aperol:'campari',soda:'tonic',tonic:'soda',wrum:'drum',drum:'wrum',gin:'vodka',vodka:'gin',tequila:'wrum',cognac:'bourbon',ginger:'soda',gfsoda:'tonic',smilk:'cmilk',cmilk:'smilk',hwater:'cwater',cwater:'hwater',choc:'syrup',foam:'cream',chai:'matcha',matcha:'chai',icecream:'cream'};
+const FAM={sour:'Sours',daisy:'Daisies',stirred:'Stirred and strong',long:'Long and bubbly',other:'One-offs',black:'Espresso and black',milk:'Milk drinks',cold:'Cold',nocoffee:'No coffee'};
+const FAMS={bar:['sour','daisy','stirred','long','other'],coffee:['black','milk','cold','nocoffee']};
+const GLS={bar:['coupe','rocks','highball','flute','wine'],coffee:['demi','sglass','cup','mug','tall']};
+const MTH={bar:['shake','stir','build'],coffee:['none','thin','thick']};
+const GLASS={coupe:'Coupe',rocks:'Rocks',highball:'Highball',flute:'Flute',wine:'Wine glass',demi:'Espresso cup',sglass:'Small glass',cup:'Small cup',mug:'Large cup',tall:'Tall glass'};
+const GUSE={coupe:'Stemmed. For drinks served up, with no ice.',rocks:'Short and heavy. Spirit-forward drinks and sours on ice.',highball:'Tall. Long drinks topped with a mixer.',flute:'Narrow, keeps sparkling wine fizzy.',wine:'Big bowl. Spritzes over lots of ice.',demi:'Tiny and thick-walled. For espresso and macchiato.',sglass:'Small and clear. For a cortado or an affogato.',cup:'Small and wide. For a flat white or cappuccino.',mug:'Big. For lattes, mochas, americanos and other long hot drinks.',tall:'For anything served over ice.'};
 const ICE={none:'None. Served up.',cubes:'Fresh cubes',big:'One big cube',crushed:'Crushed ice'};
-const METHOD={shake:'Shake',stir:'Stir',build:'Build in the glass'};
+const METHOD={shake:'Shake',stir:'Stir',build:'Build in the glass',none:'No steamed milk',thin:'Thin, silky microfoam',thick:'Thick, airy foam'};
 const GSVG={
   coupe:'<path d="M7 12h34c0 10-7 16-17 16S7 22 7 12zM24 28v19M14 49h20"/>',
   rocks:'<path d="M10 17h28l-3 31H13z"/>',
   highball:'<path d="M15 5h18l-2 45H17z"/>',
   flute:'<path d="M19 5h10c1 14-1 22-5 27-4-5-6-13-5-27zM24 32v16M17 50h14"/>',
-  wine:'<path d="M14 5h20c2 14-3 24-10 24S12 19 14 5zM24 29v19M16 50h16"/>'
+  wine:'<path d="M14 5h20c2 14-3 24-10 24S12 19 14 5zM24 29v19M16 50h16"/>',
+  demi:'<path d="M14 26h18v8a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8zM32 28h3a4 4 0 0 1 0 8h-3M9 48h28"/>',
+  sglass:'<path d="M16 20h16l-2 26H18z"/>',
+  cup:'<path d="M8 20h24v10a11 11 0 0 1-11 11h-2A11 11 0 0 1 8 30zM32 23h4a5 5 0 0 1 0 10h-4M5 48h30"/>',
+  mug:'<path d="M10 10h24v32a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4zM34 18h4a6 6 0 0 1 0 12h-4"/>',
+  tall:'<path d="M15 5h18l-2 45H17zM16 18h16M27 5l5-4"/>'
 };
 const gsvg=g=>`<svg viewBox="0 0 48 56" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${GSVG[g]}</svg>`;
 
@@ -267,14 +285,30 @@ const R=[
  {id:'collins',n:'Tom Collins',fam:'long',m:'shake',g:'highball',ice:'cubes',gar:'Lemon wheel and cherry',ing:[['gin',2],['lemon',.75],['simple',.75],['soda',0,'top']],note:'A gin sour made long. Shake everything except the soda.',mwhy:'Shake the gin, lemon and syrup, strain over fresh ice, then top with soda. Never shake the bubbles.'},
  {id:'mojito',n:'Mojito',fam:'long',m:'build',g:'highball',ice:'crushed',gar:'Mint sprig',ing:[['mint',0,'add'],['wrum',2],['lime',.75],['simple',.75],['soda',0,'top']],note:'Press the mint gently in the glass. Shredded mint turns bitter.'},
  {id:'french75',n:'French 75',fam:'long',m:'shake',g:'flute',ice:'none',gar:'Lemon twist',ing:[['gin',1],['lemon',.5],['simple',.5],['sparkling',2]],note:'A small gin sour topped with sparkling wine.',mwhy:'Shake the gin, lemon and syrup, strain into the flute, then add the sparkling wine.'},
- {id:'espresso',n:'Espresso Martini',fam:'other',m:'shake',g:'coupe',ice:'none',gar:'Three coffee beans',ing:[['vodka',1.5],['coffee',1],['espresso',1],['simple',.25]],note:'Use hot, fresh espresso and shake very hard. That is where the foam comes from.',mwhy:'Shake it hard. The foam comes from fresh espresso and a lot of air.'}
+ {id:'espresso',n:'Espresso Martini',fam:'other',m:'shake',g:'coupe',ice:'none',gar:'Three coffee beans',ing:[['vodka',1.5],['coffee',1],['espresso',1],['simple',.25]],note:'Use hot, fresh espresso and shake very hard. That is where the foam comes from.',mwhy:'Shake it hard. The foam comes from fresh espresso and a lot of air.'},
+ {track:'coffee',id:'cespresso',n:'Espresso',fam:'black',m:'none',g:'demi',gar:'Water on the side',ing:[['shot',2]],note:'About 18 g of coffee in, 36 g of espresso out, in 25 to 30 seconds. Serve it the moment it is done.'},
+ {track:'coffee',id:'americano',n:'Americano',fam:'black',m:'none',g:'mug',gar:'Nothing more',ing:[['shot',2],['hwater',6]],note:'Espresso first, then hot water. Water first with the espresso on top is a long black, which keeps more crema.'},
+ {track:'coffee',id:'macchiato',n:'Macchiato',fam:'milk',m:'thick',g:'demi',gar:'Nothing more',ing:[['shot',2],['foam',0]],note:'Macchiato means marked. It is an espresso with one spoonful of foam on top.',mwhy:'You only need a spoonful of foam, so steam a small amount of milk with plenty of air.'},
+ {track:'coffee',id:'cortado',n:'Cortado',fam:'milk',m:'thin',g:'sglass',gar:'Nothing more',ing:[['shot',2],['smilk',2]],note:'Equal parts espresso and milk. Small, strong and smooth.'},
+ {track:'coffee',id:'flatwhite',n:'Flat White',fam:'milk',m:'thin',g:'cup',gar:'Latte art',ing:[['shot',2],['smilk',4]],note:'A double shot under a thin, glossy layer of milk. The coffee leads.'},
+ {track:'coffee',id:'cappuccino',n:'Cappuccino',fam:'milk',m:'thick',g:'cup',gar:'Latte art',ing:[['shot',2],['smilk',4]],note:'The same size as a flat white. The difference is the deep, airy foam. Some cafés dust it with cocoa.'},
+ {track:'coffee',id:'latte',n:'Latte',fam:'milk',m:'thin',g:'mug',gar:'Latte art',ing:[['shot',2],['smilk',8]],note:'The biggest and mildest of the milk drinks.'},
+ {track:'coffee',id:'mocha',n:'Mocha',fam:'milk',m:'thin',g:'mug',gar:'Cocoa dusting',ing:[['choc',1],['shot',2],['smilk',7]],note:'Stir the chocolate into the espresso before you pour the milk.'},
+ {track:'coffee',id:'icedlatte',n:'Iced Latte',fam:'cold',m:'none',g:'tall',gar:'Straw',ing:[['ice',0],['cmilk',6],['shot',2]],note:'Ice, cold milk, then the espresso over the top. Nothing is steamed.'},
+ {track:'coffee',id:'icedamericano',n:'Iced Americano',fam:'cold',m:'none',g:'tall',gar:'Straw',ing:[['ice',0],['cwater',6],['shot',2]],note:'Ice and cold water first so the espresso does not shock-melt the ice.'},
+ {track:'coffee',id:'etonic',n:'Espresso Tonic',fam:'cold',m:'none',g:'tall',gar:'Slice of orange',ing:[['ice',0],['ctonic',4],['shot',2]],note:'Tonic first. Pour the espresso slowly over the top so it floats.'},
+ {track:'coffee',id:'affogato',n:'Affogato',fam:'cold',m:'none',g:'sglass',gar:'Spoon',ing:[['icecream',0],['shot',2]],note:'Affogato means drowned. Pour the hot espresso over the ice cream in front of the guest.'},
+ {track:'coffee',id:'hotchoc',n:'Hot Chocolate',fam:'nocoffee',m:'thin',g:'mug',gar:'Cocoa dusting',ing:[['choc',1.5],['smilk',8]],note:'Mix the chocolate with a splash of the hot milk first so it blends smoothly.'},
+ {track:'coffee',id:'chai',n:'Chai Latte',fam:'nocoffee',m:'thin',g:'mug',gar:'Cinnamon dusting',ing:[['chai',4],['smilk',4]],note:'Half spiced tea concentrate, half steamed milk.'},
+ {track:'coffee',id:'matchalatte',n:'Matcha Latte',fam:'nocoffee',m:'thin',g:'mug',gar:'Latte art',ing:[['matcha',0],['hwater',2],['smilk',6]],note:'Whisk the matcha smooth with hot, not boiling, water before the milk goes in. Boiling water makes it bitter.'}
 ];
+R.forEach(r=>{r.track=r.track||'bar'});
 const RID=Object.fromEntries(R.map(r=>[r.id,r]));
-const CORE=['daiquiri','oldfashioned','margarita','negroni','gt','martini'];
+const CORE=['daiquiri','oldfashioned','margarita','negroni','gt','martini','cespresso','americano','flatwhite','cappuccino','latte'];
 
 /* ---------- state ---------- */
 const KEY='barschool.v1';
-let S={xp:0,streak:{d:'',n:0},lessons:{},cards:{},builds:{},unit:null};
+let S={xp:0,streak:{d:'',n:0},lessons:{},cards:{},builds:{},unit:null,track:'bar'};
 try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 if(!S.unit)S.unit=/^en-US/i.test(navigator.language||'')?'oz':'ml';
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -282,7 +316,7 @@ const dayStr=t=>{const d=new Date(t);return d.getFullYear()+'-'+(d.getMonth()+1)
 const DAY=864e5;
 function streak(){const t=dayStr(Date.now()),y=dayStr(Date.now()-DAY);return (S.streak.d===t||S.streak.d===y)?S.streak.n:0}
 function gain(xp){S.xp+=xp;const t=dayStr(Date.now());if(S.streak.d!==t){S.streak={d:t,n:streak()+1}}save()}
-const LEVELS=[[0,'Barback'],[60,'Apprentice'],[180,'Bartender'],[360,'Senior bartender'],[600,'Head bartender']];
+const LEVELS=[[0,'New hire'],[60,'Apprentice'],[180,'Solid hand'],[400,'Senior'],[700,'Runs the bar']];
 function level(){let i=0;LEVELS.forEach((l,k)=>{if(S.xp>=l[0])i=k});const nx=LEVELS[i+1];return{i,name:LEVELS[i][1],next:nx,pct:nx?Math.round((S.xp-LEVELS[i][0])/(nx[0]-LEVELS[i][0])*100):100}}
 
 /* ---------- helpers ---------- */
@@ -290,16 +324,21 @@ const $=s=>document.querySelector(s);
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const FR={.25:'¼',.5:'½',.75:'¾'};
 function A(x){ if(S.unit==='ml')return (x*30)+' ml'; const w=Math.floor(x),f=x-w; return (w||'')+(FR[f]||'')+' oz' }
-function amt(i){const u=i[2]||ING[i[0]][2]||'oz'; if(u==='oz')return A(i[1]); if(u==='dash')return i[1]+(i[1]>1?' dashes':' dash'); if(u==='top')return 'top'; return ''}
+function amt(i){const u=i[2]||ING[i[0]][2]||'oz'; if(u==='oz')return A(i[1]); if(u==='dash')return i[1]+(i[1]>1?' dashes':' dash'); if(u==='shot')return ['','single','double','triple','quad'][i[1]]; if(u==='top')return 'top'; return ''}
 const unitOf=id=>ING[id][2]||'oz';
+const stepOf=id=>ING[id][3]||(unitOf(id)==='oz'?.25:1);
+const startOf=id=>ING[id][4]||1;
+const maxOf=id=>{const u=unitOf(id);return u==='dash'?6:u==='shot'?4:stepOf(id)>=1?12:4};
+const Tm=c=>S.unit==='oz'?Math.round(c*9/5+32)+'°F':c+'°C';
+const an=r=>(/^[AEIO]/.test(r.n)?'an ':'a ')+r.n;
 const nm=id=>ING[id][0];
 function specLine(r){return r.ing.map(i=>{const a=amt(i);return (a&&a!=='top'?a+' ':'')+nm(i[0]).toLowerCase()+(a==='top'?' to top':'')}).join('<br>')}
 function ratioBar(parts){return `<div class="ratio" role="img" aria-label="Ratio bar">${parts.map(p=>`<span class="r-${p[2]}" style="flex:${p[1]}">${p[3]||''}</span>`).join('')}</div>`}
-function recipeRatio(r){return ratioBar(r.ing.filter(i=>ING[i[0]][1]!=='herb').map(i=>{const u=i[2]||unitOf(i[0]);return [nm(i[0]),u==='oz'?i[1]:u==='top'?2:.2,ING[i[0]][1],'']}))}
+function recipeRatio(r){return ratioBar(r.ing.filter(i=>ING[i[0]][1]!=='herb').map(i=>{const u=i[2]||unitOf(i[0]);return [nm(i[0]),u==='oz'||u==='shot'?i[1]:u==='top'?2:.2,ING[i[0]][1],'']}))}
 function legend(r){return `<ul class="legend">${r.ing.map(i=>`<li><i class="r-${ING[i[0]][1]}"></i>${nm(i[0])}<span class="mono">${amt(i)}</span></li>`).join('')}</ul>`}
 const stars=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 const starsFor=s=>s>=90?3:s>=70?2:s>=50?1:0;
-function methodWhy(r){ if(r.mwhy)return r.mwhy; if(r.m==='shake')return 'It has citrus juice in it. Juice needs the air and force of a shake to blend.'; if(r.m==='stir')return 'Everything in it is clear booze, so stir. It stays silky and transparent.'; return 'It is topped with something fizzy. Build it in the glass so the bubbles survive.'}
+function methodWhy(r){ if(r.mwhy)return r.mwhy; if(r.m==='none')return 'Nothing is steamed for this one.'; if(r.m==='thin')return 'Add air for only a second or two, then spin the milk until it looks like wet paint.'; if(r.m==='thick')return 'Add air for longer at the start to build a deep, airy cap of foam.'; if(r.m==='shake')return 'It has citrus juice in it. Juice needs the air and force of a shake to blend.'; if(r.m==='stir')return 'Everything in it is clear booze, so stir. It stays silky and transparent.'; return 'It is topped with something fizzy. Build it in the glass so the bubbles survive.'}
 
 /* ---------- lessons ---------- */
 const T=(h,body,fig)=>({t:'teach',h,body,fig});
@@ -426,33 +465,133 @@ const LESSONS=()=>[
  Q('The bar is three deep and a new guest arrives. What do you do?',['Make eye contact and say you will be right with them','Finish everything first, then look up','Ask them to come back later','Serve them before the people waiting'],'People will wait happily once they know they have been seen.'),
  T('Serve responsibly',`<p>One standard drink is about 1½ oz (45 ml) of 40% spirit. Offer water freely and check ID as your local law requires.</p><p>If a guest is slurring, unsteady or aggressive, <b>stop serving alcohol</b>. Be polite and firm, offer water and food, and help them get home safely. Many places require a server certificate, so check the rules where you work.</p>`),
  Q('A guest who is slurring and unsteady orders another round.',['Politely decline, offer water and help them get home safely','Serve one more, then stop','Serve it weaker without telling them','Ignore them until they leave'],'Refusing service is part of the job, and in most places it is the law.')
+]},
+{track:'coffee',id:11,title:'Espresso basics',sub:'Dose, yield and time',cards:[
+ T('What espresso is',`<p>Hot water forced through finely ground coffee at about <b>9 bars of pressure</b>. The result is a small, strong coffee with a golden foam on top called <b>crema</b>.</p><p>Nearly every drink on a café menu starts with one.</p>`),
+ T('Three numbers',`<ul class="pts"><li><b>Dose</b>: the dry coffee in the basket. 18 g for a double.</li><li><b>Yield</b>: the liquid espresso in the cup. 36 g.</li><li><b>Time</b>: 25 to 30 seconds from the moment you start the pump.</li></ul><p>That is a <b>1 : 2 ratio</b>, the standard starting point.</p>`,{ratio:[['Coffee in',1,'coffee','18 g'],['Espresso out',2,'water','36 g']]}),
+ Q('A double uses 18 g of coffee. How much espresso should come out?',['36 g','18 g','60 g','90 g'],'One part coffee to two parts espresso.'),
+ Q('How long should that shot take?',['25 to 30 seconds','10 to 15 seconds','45 to 60 seconds','About 2 minutes'],'Much faster or slower than that and the taste goes wrong.'),
+ Q('What is the dose?',['The dry ground coffee in the basket','The liquid in the cup','The water in the boiler','The length of the shot'],'Dose goes in, yield comes out.'),
+ T('Weigh everything',`<p>Put a small scale under the cup. Crema is mostly gas, so two shots that look the same size can weigh very different amounts.</p><p>Weight is what makes your coffee repeatable.</p>`),
+ Q('Why weigh espresso instead of judging it by eye?',['Crema is mostly gas, so volume misleads','Scales are faster','It keeps the shot hotter','It makes more crema'],'Fresh coffee makes more crema, which makes a shot look bigger than it is.'),
+ T('Short and long',`<ul class="pts"><li><b>Ristretto</b>: the same dose with less water, about 1 : 1.5. Thick and sweet.</li><li><b>Lungo</b>: the same dose with more water, about 1 : 3. Lighter and more bitter.</li></ul>`),
+ Q('A ristretto is…',['The same dose with less water through it','A double dose','An espresso with milk','A decaf shot'],'Ristretto means restricted.')
+]},
+{track:'coffee',id:12,title:'Dial in the grind',sub:'Taste the shot, then fix it',cards:[
+ T('Extraction',`<p>Water pulls flavours out of coffee in order: <b>sour acids first</b>, then sweetness, then <b>bitterness last</b>.</p><p>Stop too early and the cup is sour. Go too far and it is bitter. Your job is to land in the sweet middle.</p>`),
+ T('Read the shot',`<ul class="pts"><li><b>Fast, pale, sour, thin</b>: under-extracted. <b>Grind finer.</b></li><li><b>Slow, dripping, bitter, dry</b>: over-extracted. <b>Grind coarser.</b></li></ul><p>Finer grounds slow the water down. Coarser grounds let it through faster.</p>`),
+ Q('Your shot ran in 15 seconds and tastes sour.',['Grind finer','Grind coarser','Use less coffee','Tamp more gently'],'The water rushed through. Finer grounds slow it down so it extracts more.'),
+ Q('Your shot took 45 seconds and tastes bitter and dry.',['Grind coarser','Grind finer','Use more coffee','Use hotter water'],'The water was stuck in the coffee for too long.'),
+ Q('Sour, thin and fast means the shot is…',['Under-extracted','Over-extracted','Burnt','Stale'],'Only the early, sour flavours made it into the cup.'),
+ T('One change at a time',`<p>Keep the dose the same and change <b>only the grind</b>. Taste every shot.</p><p>After you move the grinder, run a few grams through and throw them away. The first grounds out are still at the old setting.</p>`),
+ Q('While dialling in, what do you change?',['The grind, with the dose kept the same','Dose and grind together','The water temperature','How hard you tamp'],'Change two things at once and you cannot tell which one helped.'),
+ T('Fresh beans, ground to order',`<p>Coffee tastes best from about one to four weeks after roasting. Once ground, it goes stale in minutes.</p><p>Keep beans airtight, cool and dark. Not in the fridge, where they pick up moisture and smells.</p>`),
+ Q('When do you grind the coffee?',['Right before each shot','At the start of the shift','The night before','Once a week'],'Ground coffee loses most of its aroma within minutes.')
+]},
+{track:'coffee',id:13,title:'Pulling the shot',sub:'Puck prep, step by step',cards:[
+ T('Prep the puck',`<p>Dose into a clean, <b>dry</b> basket. Spread the grounds evenly, then tamp <b>level</b> and firm.</p><p>Level matters far more than force. Press the same way every time.</p>`),
+ Q('What matters most when tamping?',['Keeping it level','Pressing as hard as you can','Tamping twice','Twisting at the end'],'A tilted puck is thinner on one side, and the water will rush through there.'),
+ T('Channelling',`<p>Water takes the easiest path. If the puck has a crack or a thin spot, water blasts through it and ignores the rest.</p><p>A channelled shot tastes <b>sour and bitter at once</b>. Even grounds and a level tamp prevent it.</p>`),
+ Q('What is channelling?',['Water rushing through a weak spot in the puck','Coffee stuck in the grinder','Steam leaking from the wand','Milk splitting in the cup'],'Part of the coffee is over-extracted and the rest is barely touched.'),
+ T('Flush, lock, go',`<p>Run the group head for a second to rinse out old grounds. Lock the handle in and <b>start the pump straight away</b>.</p><p>Dry coffee sitting against hot metal starts to scorch.</p>`),
+ O('Put the shot routine in order.',['Flush the group head','Dose and spread the grounds','Tamp level','Lock in and start straight away','Stop at your target weight'],'Flush, dose, tamp, go, and stop by weight.'),
+ Q('Why start the shot as soon as the handle is locked in?',['The hot group head starts to scorch the dry coffee','The pump loses pressure','The crema disappears','The basket cools down'],'A few seconds of waiting is enough to add a burnt taste.'),
+ T('Serve it now',`<p>Espresso fades fast. The crema thins and the flavour flattens within a minute or two.</p><p>Then knock out the puck, wipe the basket and flush the group, ready for the next one.</p>`),
+ Q('How soon should an espresso be served or used?',['Within a minute or so','Any time in ten minutes','Once it has cooled','It keeps all morning'],'A shot that sits tastes flat and bitter.')
+]},
+{track:'coffee',id:14,title:'Steaming milk',sub:'Silky microfoam every time',cards:[
+ T('Set up',`<p>Start with <b>cold milk in a cold jug</b>, filled to just below where the spout begins. Cold milk gives you more time to work.</p><p>Open the steam for a second first to blow out any water. That is called <b>purging</b>.</p>`),
+ T('Two phases',`<ul class="pts"><li><b>Stretch</b>: tip just under the surface. You hear a gentle paper-tearing hiss as air goes in. Only for the first few seconds.</li><li><b>Spin</b>: sink the tip a little, off-centre, so the milk whirlpools. This folds the bubbles into a silky texture.</li></ul>`),
+ Q('When do you add air to the milk?',['Only in the first few seconds, while it is cold','The whole way through','Right at the end','Never'],'Bubbles added to warm milk stay big and never smooth out.'),
+ Q('What sound tells you air is going in?',['A gentle paper-tearing hiss','A loud screech','Silence','A deep rumble'],'A screech means the tip is too deep. Big splutters mean it is too high.'),
+ T('Stop at the right heat',`<p>Stop at <b>${Tm(60)} to ${Tm(65)}</b>. That is when the jug is too hot to keep your hand on for more than a second.</p><p>Past about ${Tm(70)} milk scalds. The sweetness goes and it tastes cooked.</p>`),
+ Q('What temperature do you steam milk to?',[`${Tm(60)} to ${Tm(65)}`,`${Tm(40)} to ${Tm(45)}`,`${Tm(80)} to ${Tm(85)}`,'Boiling'],'Hot enough to drink straight away, cool enough to stay sweet.'),
+ T('Thin or thick',`<p>More stretching makes more foam.</p><ul class="pts"><li><b>Flat white and latte</b>: a short stretch for a thin, glossy layer.</li><li><b>Cappuccino</b>: a longer stretch for a deep, airy cap.</li></ul><p>Good milk looks like <b>wet paint</b>. Tap the jug to pop bubbles and swirl to keep it shiny.</p>`),
+ Q('How do you get the thicker foam for a cappuccino?',['Add air for longer at the start','Steam it hotter','Use less milk','Hold the tip deeper'],'Longer stretch, more foam. The temperature stays the same.'),
+ T('Wipe and purge, every time',`<p>The moment you finish, wipe the wand with a damp cloth and purge it. Milk bakes on in seconds and gets sucked back inside.</p><p>Never re-steam leftover milk. It will not foam and it tastes flat.</p>`),
+ Q('What do you do the moment you finish steaming?',['Wipe the wand and purge it','Pour first and clean later','Leave it to cool','Turn the machine off'],'It takes two seconds and keeps old milk out of the next drink.')
+]},
+{track:'coffee',id:15,title:'The espresso menu',sub:'What makes each drink different',cards:[
+ T('Same shot, different milk',`<p>Almost every drink starts with the same double espresso. What changes is <b>how much milk</b> and <b>how much foam</b>.</p><p>Sizes vary from café to café. These are the common ones.</p>`),
+ T('Small and strong',`<ul class="pts"><li><b>Macchiato</b>: an espresso marked with one spoonful of foam.</li><li><b>Cortado</b>: equal parts espresso and steamed milk.</li></ul>`,{ratio:[['Espresso',2,'coffee',A(2)],['Steamed milk',2,'milk',A(2)]]}),
+ Q('Espresso with just a spoonful of milk foam.',['Macchiato','Cortado','Flat white','Latte'],'Macchiato means marked or stained.'),
+ Q('Equal parts espresso and steamed milk.',['Cortado','Latte','Cappuccino','Macchiato'],'Small, strong and served in a little glass.'),
+ T('Flat white and cappuccino',`<p>Both are a double espresso with about ${A(4)} of milk in a small cup.</p><ul class="pts"><li><b>Flat white</b>: thin, silky microfoam.</li><li><b>Cappuccino</b>: thick, airy foam.</li></ul>`,{ratio:[['Espresso',2,'coffee',A(2)],['Steamed milk',4,'milk',A(4)]]}),
+ Q('What separates a cappuccino from a flat white?',['The cappuccino has much thicker foam','The flat white has no espresso','The cappuccino is twice the size','The flat white is served cold'],'Same shot, similar size, very different texture.'),
+ T('The latte',`<p>The biggest and mildest: a double espresso with about ${A(8)} of milk and a thin layer of foam.</p><p>A <b>mocha</b> is a latte with chocolate stirred into the espresso.</p>`,{ratio:[['Espresso',2,'coffee',''],['Steamed milk',8,'milk',A(8)]]}),
+ Q('Which of these has the most milk?',['Latte','Cortado','Macchiato','Flat white'],'About four parts milk to one part espresso.'),
+ Q('A mocha is a latte with…',['Chocolate','Caramel','Cinnamon','An extra shot'],'Stir the chocolate into the espresso first so it dissolves.'),
+ T('Black and long',`<ul class="pts"><li><b>Americano</b>: espresso topped up with hot water.</li><li><b>Long black</b>: hot water first, espresso poured on top. This keeps the crema.</li></ul>`),
+ Q('Hot water first, then espresso poured on top.',['Long black','Americano','Lungo','Ristretto'],'The order is the whole difference from an americano.')
+]},
+{track:'coffee',id:16,title:'Brewed coffee',sub:'Pour-over, French press, cold brew',cards:[
+ T('The filter ratio',`<p>About <b>60 g of coffee per litre of water</b>, which is 1 : 16. For one cup that is 15 g of coffee and 250 g of water.</p><p>Use water just off the boil, around ${Tm(94)}.</p>`,{ratio:[['Coffee',1,'coffee',''],['Water',16,'water','16 parts water']]}),
+ Q('How much coffee for 250 g of water?',['About 15 g','About 5 g','About 30 g','About 50 g'],'250 divided by 16 is close to 15.'),
+ T('Grind follows time',`<p>The longer water touches the coffee, the coarser you grind.</p><ul class="pts"><li><b>Espresso</b>: fine. 30 seconds.</li><li><b>Pour-over</b>: medium. About 3 minutes.</li><li><b>French press</b>: coarse. 4 minutes.</li><li><b>Cold brew</b>: coarse. 12 to 18 hours.</li></ul>`),
+ O('Order these from finest grind to coarsest.',['Espresso','Pour-over','French press'],'Short contact needs fine grounds. Long contact needs coarse.'),
+ T('Pour-over',`<p>Rinse the paper filter first. Add the coffee, then pour about twice its weight in water and wait 30 seconds. This is the <b>bloom</b>: fresh coffee bubbles as trapped gas escapes.</p><p>Then pour the rest slowly in circles. It should finish dripping at about 3 minutes.</p>`),
+ Q('What is the bloom?',['A first small pour that lets gas escape from the grounds','The foam on top of an espresso','A stir at the end','Warming the cup'],'Gas pushes water away from the coffee, so you let it out first.'),
+ Q('Your pour-over tastes weak and sour. What do you try?',['Grind finer','Grind coarser','Use cooler water','Use less coffee'],'Sour means under-extracted, the same rule as espresso.'),
+ T('French press',`<p>Coarse coffee, hot water, lid on, wait <b>4 minutes</b>. Press gently and pour all of it out.</p><p>Coffee left sitting on the grounds keeps extracting and turns bitter.</p>`),
+ Q('How long does a French press steep?',['About 4 minutes','30 seconds','1 minute','15 minutes'],'Then pour it all out so it stops brewing.'),
+ T('Cold brew',`<p>Coarse grounds soaked in <b>cold water for 12 to 18 hours</b>, then filtered. It is smooth and low in acidity, and is usually brewed strong and diluted to serve.</p><p>Iced coffee is different: it is hot coffee cooled over ice.</p>`),
+ Q('How is cold brew made?',['Grounds steeped in cold water for 12 to 18 hours','Hot coffee poured over ice','Espresso shaken with ice','Brewing straight onto ice cubes'],'Time does the work that heat normally does.')
+]},
+{track:'coffee',id:17,title:'Cold drinks and no-coffee drinks',sub:'Iced lattes, chai, matcha and plant milks',cards:[
+ T('Iced espresso drinks',`<p>Nothing is steamed. Fill a tall glass with ice, add cold milk or cold water, then pour the espresso over the top.</p><ul class="pts"><li>With milk: <b>iced latte</b></li><li>With water: <b>iced americano</b></li></ul>`),
+ Q('How do you make an iced latte?',['Espresso over cold milk and ice','Steam the milk, then add ice','Blend a hot latte with ice','Chill a hot latte in the fridge'],'Steamed milk would melt the ice and water the drink down.'),
+ T('Two easy showpieces',`<ul class="pts"><li><b>Affogato</b>: a scoop of vanilla ice cream with a hot espresso poured over it.</li><li><b>Espresso tonic</b>: ice and tonic water, with espresso poured slowly on top so it floats.</li></ul>`),
+ Q('What is an affogato?',['Espresso poured over vanilla ice cream','Espresso with whipped cream','Iced espresso with tonic','A frozen latte'],'Affogato means drowned.'),
+ T('No coffee at all',`<ul class="pts"><li><b>Hot chocolate</b>: chocolate and steamed milk.</li><li><b>Chai latte</b>: spiced tea concentrate and steamed milk, about half and half.</li><li><b>Matcha latte</b>: whisk the powder smooth with a little water at about ${Tm(80)}, then add steamed milk.</li></ul>`),
+ Q('Why not use boiling water on matcha?',['It turns bitter','It will not dissolve','It loses its colour','It foams over'],'Whisk it with hot, not boiling, water.'),
+ Q('What goes in a chai latte?',['Spiced tea concentrate and steamed milk','Espresso and cinnamon','Matcha and honey','Black tea and cold milk'],'Add a shot of espresso and it becomes a dirty chai.'),
+ T('Plant milks',`<p><b>Oat</b> milk steams most like dairy and is the usual first choice. Steam plant milks a little cooler, about ${Tm(55)} to ${Tm(60)}, because they split and taste burnt sooner.</p><p>Use a <b>separate, clean jug</b> for each milk. A trace of dairy can seriously harm a guest with an allergy.</p>`),
+ Q('Why use a separate jug for plant milks?',['A trace of dairy can harm a guest with an allergy','It foams better','It saves milk','It keeps the jug cold'],'Treat every plant milk order as a possible allergy.'),
+ T('Syrups and decaf',`<p>Flavoured syrup goes <b>into the cup first</b>, so the hot espresso dissolves it.</p><p>Always repeat a decaf order back. Giving caffeine to someone who asked for decaf is a real mistake, not a small one.</p>`),
+ Q('When does flavoured syrup go in?',['Into the cup first, before the espresso','On top at the end','Into the milk jug','Into the basket with the coffee'],'The hot shot melts it and mixes it for you.')
+]},
+{track:'coffee',id:18,title:'Working the machine',sub:'Workflow, cleaning and service',cards:[
+ T('Shot first, then milk',`<p>Start the shot, then steam the milk <b>while it runs</b>. Both finish at the same moment, so neither sits and fades.</p>`),
+ O('One latte. Put the workflow in order.',['Grind, dose and tamp','Start the shot','Steam the milk while the shot runs','Wipe and purge the wand','Pour the milk into the espresso'],'The shot and the milk finish together, and the wand is clean before you pour.'),
+ T('Take the order properly',`<p>Four things for every drink: <b>size, milk, shots or decaf, here or to go</b>. Repeat it back and write the name down.</p>`),
+ Q('Which of these do you confirm on every milk drink?',['Which milk they want','Their favourite roast','The grind size','The water temperature'],'It is the most common thing to get wrong, and the one that matters for allergies.'),
+ T('Several drinks at once',`<p>Group drinks by milk. For two of the same, steam one bigger jug and split it.</p><p>Make <b>straight espressos last</b> and hand them over at once. They fade fastest.</p>`),
+ Q('In a mixed order, which drink do you make last?',['The straight espresso','The latte','The hot chocolate','The americano'],'Milk and water protect a shot. A bare espresso has nothing to hide behind.'),
+ T('Clean as you go',`<p>After every shot: knock out the puck, wipe the basket, flush the group. After every jug: wipe, purge, rinse.</p><p>At close, <b>backflush</b>: run cleaner back through the group head using a basket with no holes. Old coffee oils turn rancid and make every shot bitter.</p>`),
+ Q('Why does a dirty machine make bitter coffee?',['Old coffee oils turn rancid and get into every shot','The water gets hotter','The pump slows down','The grinder clogs'],'Clean equipment is the cheapest way to make better coffee.'),
+ Q('What is backflushing?',['Forcing water back through the group head with a blind basket to clean it','Rinsing the milk jug','Emptying the grinder','Descaling the kettle'],'It is done with cleaner at the end of every day.'),
+ T('Hot things and people',`<p>Steam and hot water burn. Purge the wand toward the <b>drip tray</b>, never toward a person.</p><p>Call the drink and the name clearly, press takeaway lids on properly, and say “careful, it’s hot” when you hand it over.</p>`),
+ Q('Where do you point the steam wand when you purge it?',['At the drip tray, away from people','Into the milk jug','Toward the cups','It does not matter'],'A purge is a short blast of steam and scalding water.')
 ]}
 ];
+const trackLessons=()=>LESSONS().filter(l=>(l.track||'bar')===S.track);
 
 /* ---------- drill deck ---------- */
 const INT=[0,1,3,7,14,30];
-function unlocked(){const f=new Set();if(S.lessons[5]){f.add('sour');f.add('daisy')}if(S.lessons[6])f.add('stirred');if(S.lessons[7]){f.add('long');f.add('other')}
-  return R.filter(r=>CORE.includes(r.id)||f.has(r.fam))}
+function unlocked(){const f=new Set(),L=S.lessons;
+  if(S.track==='coffee'){if(L[15]){f.add('black');f.add('milk')}if(L[17]){f.add('cold');f.add('nocoffee')}}
+  else{if(L[5]){f.add('sour');f.add('daisy')}if(L[6])f.add('stirred');if(L[7]){f.add('long');f.add('other')}}
+  return R.filter(r=>r.track===S.track&&(CORE.includes(r.id)||f.has(r.fam)))}
 const pickN=(arr,n)=>shuffle(arr).slice(0,n);
 function recipeCards(r){
-  const out=[],uniq=a=>[...new Set(a)];
-  out.push({id:r.id+':m',q:`How do you make a ${r.n}?`,opts:[METHOD[r.m],...Object.keys(METHOD).filter(m=>m!==r.m).map(m=>METHOD[m])],why:methodWhy(r)});
-  out.push({id:r.id+':g',q:`Which glass for a ${r.n}?`,opts:[GLASS[r.g],...pickN(Object.keys(GLASS).filter(g=>g!==r.g),3).map(g=>GLASS[g])],why:GUSE[r.g]+' Ice: '+ICE[r.ice].toLowerCase()});
-  out.push({id:r.id+':r',q:`What garnishes a ${r.n}?`,opts:[r.gar,...pickN(uniq(R.map(x=>x.gar)).filter(g=>g!==r.gar&&!r.gar.includes(g)&&!g.includes(r.gar)),3)],why:r.note});
+  const out=[],uniq=a=>[...new Set(a)],co=r.track==='coffee',N=an(r),mine=R.filter(x=>x.track===r.track);
+  out.push({id:r.id+':m',q:co?`What milk texture does ${N} need?`:`How do you make ${N}?`,opts:[METHOD[r.m],...MTH[r.track].filter(m=>m!==r.m).map(m=>METHOD[m])],why:methodWhy(r)});
+  out.push({id:r.id+':g',q:co?`What do you serve ${N} in?`:`Which glass for ${N}?`,opts:[GLASS[r.g],...pickN(GLS[r.track].filter(g=>g!==r.g),3).map(g=>GLASS[g])],why:GUSE[r.g]+(co?'':' Ice: '+ICE[r.ice].toLowerCase())});
+  out.push({id:r.id+':r',q:co?`What is the finishing touch on ${N}?`:`What garnishes ${N}?`,opts:[r.gar,...pickN(uniq(mine.map(x=>x.gar)).filter(g=>g!==r.gar&&!r.gar.includes(g)&&!g.includes(r.gar)),3)],why:r.note});
   r.ing.forEach((i,k)=>{ if((i[2]||unitOf(i[0]))!=='oz'||k>2)return;
-    const vals=[.25,.5,.75,1,1.5,2,2.5,3].filter(v=>v!==i[1]).sort((a,b)=>Math.abs(a-i[1])-Math.abs(b-i[1])).slice(0,3);
-    out.push({id:r.id+':a'+k,q:`How much ${nm(i[0]).toLowerCase()} goes in a ${r.n}?`,opts:[A(i[1]),...vals.map(A)],why:'The full spec:<br>'+specLine(r)})});
-  const same=R.filter(x=>x.fam===r.fam&&x.id!==r.id),rest=R.filter(x=>x.fam!==r.fam);
-  out.push({id:r.id+':n',q:'Which drink is this?',sub:specLine(r),opts:[r.n,...[...pickN(same,3),...pickN(rest,3)].slice(0,3).map(x=>x.n)],why:r.note});
+    const vals=(stepOf(i[0])>=1?[1,2,3,4,5,6,7,8,10,12]:[.25,.5,.75,1,1.5,2,2.5,3]).filter(v=>v!==i[1]).sort((a,b)=>Math.abs(a-i[1])-Math.abs(b-i[1])).slice(0,3);
+    out.push({id:r.id+':a'+k,q:`How much ${nm(i[0]).toLowerCase()} goes in ${N}?`,opts:[A(i[1]),...vals.map(A)],why:'The full spec:<br>'+specLine(r)})});
+  const same=mine.filter(x=>x.fam===r.fam&&x.id!==r.id),rest=mine.filter(x=>x.fam!==r.fam);
+  out.push({id:r.id+':n',q:'Which drink is this?',sub:specLine(r)+(co?'<br>'+METHOD[r.m].toLowerCase():''),opts:[r.n,...[...pickN(same,3),...pickN(rest,3)].slice(0,3).map(x=>x.n)],why:r.note});
   if(r.ing.length>2){const k=1,miss=r.ing[k],role=ING[miss[0]][1],has=new Set(r.ing.map(i=>i[0]));
-    const pool=Object.keys(ING).filter(x=>!has.has(x));
+    const pool=ingsFor(r.track).filter(x=>!has.has(x));
     const ds=[...pickN(pool.filter(x=>ING[x][1]===role),3),...pickN(pool.filter(x=>ING[x][1]!==role),3)].slice(0,3);
-    out.push({id:r.id+':x',q:`A ${r.n} has ${r.ing.filter((_,j)=>j!==k).map(i=>nm(i[0]).toLowerCase()).join(', ')} and what else?`,opts:[nm(miss[0]),...ds.map(nm)],why:'The full spec:<br>'+specLine(r)})}
+    out.push({id:r.id+':x',q:`${N[0].toUpperCase()+N.slice(1)} has ${r.ing.filter((_,j)=>j!==k).map(i=>nm(i[0]).toLowerCase()).join(', ')} and what else?`,opts:[nm(miss[0]),...ds.map(nm)],why:'The full spec:<br>'+specLine(r)})}
   return out;
 }
 function deck(){
   const d=[];
-  LESSONS().forEach(l=>{if(S.lessons[l.id])l.cards.forEach((c,i)=>{if(c.t==='mcq')d.push({...c,id:'L'+l.id+':'+i})})});
+  trackLessons().forEach(l=>{if(S.lessons[l.id])l.cards.forEach((c,i)=>{if(c.t==='mcq')d.push({...c,id:'L'+l.id+':'+i})})});
   unlocked().forEach(r=>d.push(...recipeCards(r)));
   return d;
 }
@@ -480,17 +619,17 @@ function render(){
   const st=streak();
   top.innerHTML=`<div class="word">Bar<i>School</i></div><span class="pill">${st} day streak</span><button class="pill" data-a="unit" aria-label="Switch units">${S.unit==='oz'?'oz ⇄ ml':'ml ⇄ oz'}</button>`;
   tabs.innerHTML=TABS.map(t=>`<button data-a="tab" data-id="${t[0]}" ${t[0]===tab?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${t[2]}</svg>${t[1]}</button>`).join('');
-  main.innerHTML=({learn:vLearn,drill:vDrill,build:vBuild,specs:vSpecs})[tab]();
+  main.innerHTML=`<div class="seg" role="group" aria-label="What you are learning">${[['bar','Cocktails'],['coffee','Coffee']].map(t=>`<button data-a="track" data-id="${t[0]}" aria-pressed="${S.track===t[0]}">${t[1]}</button>`).join('')}</div>`+({learn:vLearn,drill:vDrill,build:vBuild,specs:vSpecs})[tab]();
   if(tab==='specs')specList();
 }
 
 /* ---------- Learn ---------- */
 function vLearn(){
-  const ls=LESSONS(),nx=ls.find(l=>!S.lessons[l.id]),lv=level(),ds=deckStats();
-  const hero=nx?`<p class="eyebrow">Lesson ${nx.id} of ${ls.length} · about 3 min</p><h1>${nx.title}</h1><p class="lead">${nx.id===1?'Learn the pattern, drill it, then build the drink. Short lessons, a question every few seconds.':nx.sub+'.'}</p><button class="btn" data-a="lesson" data-id="${nx.id}">${nx.id===1?'Start':'Continue'}</button>`
-   :`<p class="eyebrow">Course complete</p><h1>Now keep it sharp</h1><p class="lead">${ds.due} cards are due for review. Then go build a few drinks from memory.</p><button class="btn" data-a="drill">Start a drill</button>`;
+  const ls=trackLessons(),nx=ls.find(l=>!S.lessons[l.id]),lv=level(),ds=deckStats(),first=nx===ls[0];
+  const hero=nx?`<p class="eyebrow">Lesson ${ls.indexOf(nx)+1} of ${ls.length} · about 3 min</p><h1>${nx.title}</h1><p class="lead">${first?'Learn the pattern, drill it, then make the drink. Short lessons, a question every few seconds.':nx.sub+'.'}</p><button class="btn" data-a="lesson" data-id="${nx.id}">${first?'Start':'Continue'}</button>`
+   :`<p class="eyebrow">Course complete</p><h1>Now keep it sharp</h1><p class="lead">${ds.due} cards are due for review. Then go make a few drinks from memory.</p><button class="btn" data-a="drill">Start a drill</button>`;
   return `<section class="hero">${hero}<div class="stack" style="gap:8px"><div class="lvl"><span>${lv.name}</span><span>${S.xp} XP${lv.next?' · '+lv.next[1]+' at '+lv.next[0]:''}</span></div><div class="prog"><i style="width:${lv.pct}%"></i></div></div></section>
-  <section class="stack"><h2>The course</h2><ol class="path">${ls.map(l=>`<li class="${S.lessons[l.id]?'done':nx&&nx.id===l.id?'next':''}"><button data-a="lesson" data-id="${l.id}"><span class="num">${S.lessons[l.id]?'✓':l.id}</span><span class="grow"><span class="t">${l.title}</span><br><span class="small muted">${l.sub}</span></span><span class="chev" aria-hidden="true">›</span></button></li>`).join('')}</ol></section>
+  <section class="stack"><h2>The ${S.track==='coffee'?'coffee':'cocktail'} course</h2><ol class="path">${ls.map((l,k)=>`<li class="${S.lessons[l.id]?'done':nx&&nx.id===l.id?'next':''}"><button data-a="lesson" data-id="${l.id}"><span class="num">${S.lessons[l.id]?'✓':k+1}</span><span class="grow"><span class="t">${l.title}</span><br><span class="small muted">${l.sub}</span></span><span class="chev" aria-hidden="true">›</span></button></li>`).join('')}</ol></section>
   <button class="link" data-a="${resetArmed?'reset2':'reset'}">${resetArmed?'Tap again to erase all progress':'Reset progress'}</button>`;
 }
 
@@ -523,7 +662,7 @@ function renderPlayer(top,main,foot){
   if(P.done){
     top.innerHTML=`<div class="word">Bar<i>School</i></div>`;
     const acc=P.asked?Math.round(P.right/P.asked*100):100;
-    const nxt=P.kind==='lesson'?LESSONS().find(l=>!S.lessons[l.id]):null;
+    const nxt=P.kind==='lesson'?trackLessons().find(l=>!S.lessons[l.id]):null;
     main.innerHTML=`<div class="card"><p class="eyebrow">${P.kind==='lesson'?'Lesson complete':'Drill complete'}</p><h1>${acc===100?'Clean round.':acc>=70?'Solid work.':'That is how it sticks.'}</h1>
     <div class="stats"><div class="stat"><b>${acc}%</b><span>first try</span></div><div class="stat"><b>+${P.xp}</b><span>XP</span></div><div class="stat"><b>${streak()}</b><span>day streak</span></div></div>
     <p class="muted">${P.kind==='lesson'?'These questions are now in your drill deck. They will come back just before you would forget them.':'Missed cards are due again today. The rest are scheduled further out.'}</p></div>`;
@@ -573,56 +712,77 @@ function next(){
 }
 
 /* ---------- Build ---------- */
+const TR=()=>R.filter(r=>r.track===S.track);
 function vBuild(){
-  const done=R.filter(r=>S.builds[r.id]!=null).length;
-  return `<section class="stack"><p class="eyebrow">Behind the bar</p><h1>Make the drink</h1><p class="muted">A ticket comes in. Pick the bottles, pour the amounts, shake or stir, choose the glass and garnish. You get marked like a guest would mark you.</p>
+  const co=S.track==='coffee',list=TR(),done=list.filter(r=>S.builds[r.id]!=null).length;
+  return `<section class="stack"><p class="eyebrow">${co?'On the machine':'Behind the bar'}</p><h1>Make the drink</h1><p class="muted">${co?'A ticket comes in. Choose what goes in the cup, pull the shot, steam the milk, then pick the cup. You get marked like a guest would mark you.':'A ticket comes in. Pick the bottles, pour the amounts, shake or stir, choose the glass and garnish. You get marked like a guest would mark you.'}</p>
   <button class="btn" data-a="random">Random ticket</button></section>
-  <section class="stack"><div class="row"><h2 class="grow">The menu</h2><span class="pill">${done} of ${R.length} served</span></div>
-  ${Object.keys(FAM).map(f=>`<div><p class="tag" style="padding:10px 4px 2px">${FAM[f]}</p><ul class="menu">${R.filter(r=>r.fam===f).map(r=>`<li><button data-a="order" data-id="${r.id}"><span class="grow"><b>${r.n}</b></span><span class="stars" aria-label="${S.builds[r.id]!=null?starsFor(S.builds[r.id])+' of 3 stars':'not made yet'}">${S.builds[r.id]!=null?stars(starsFor(S.builds[r.id])):''}</span><span class="chev" aria-hidden="true">›</span></button></li>`).join('')}</ul></div>`).join('')}</section>`;
+  <section class="stack"><div class="row"><h2 class="grow">The menu</h2><span class="pill">${done} of ${list.length} served</span></div>
+  ${FAMS[S.track].map(f=>`<div><p class="tag" style="padding:10px 4px 2px">${FAM[f]}</p><ul class="menu">${list.filter(r=>r.fam===f).map(r=>`<li><button data-a="order" data-id="${r.id}"><span class="grow"><b>${r.n}</b></span><span class="stars" aria-label="${S.builds[r.id]!=null?starsFor(S.builds[r.id])+' of 3 stars':'not made yet'}">${S.builds[r.id]!=null?stars(starsFor(S.builds[r.id])):''}</span><span class="chev" aria-hidden="true">›</span></button></li>`).join('')}</ul></div>`).join('')}</section>`;
 }
 function startBuild(id){
   const r=RID[id],spec=r.ing.map(i=>i[0]),pool=new Set(spec);
   spec.forEach(x=>{if(TWIN[x]&&pool.size<spec.length+3)pool.add(TWIN[x])});
-  shuffle(Object.keys(ING)).forEach(x=>{if(pool.size<Math.max(10,spec.length+5))pool.add(x)});
-  const gars=[...new Set(R.map(x=>x.gar))].filter(g=>g!==r.gar&&!r.gar.includes(g)&&!g.includes(r.gar));
-  B={r,step:0,picks:{},pool:[...pool].sort((a,b)=>nm(a).localeCompare(nm(b))),method:null,t:0,glass:null,gar:null,garOpts:shuffle([r.gar,...pickN(gars,3)]),peek:false,no:String(Math.floor(Math.random()*900)+100),table:Math.floor(Math.random()*24)+1};
+  shuffle(ingsFor(r.track)).forEach(x=>{if(pool.size<Math.max(10,spec.length+5))pool.add(x)});
+  const gars=[...new Set(R.filter(x=>x.track===r.track).map(x=>x.gar))].filter(g=>g!==r.gar&&!r.gar.includes(g)&&!g.includes(r.gar));
+  B={r,step:0,picks:{},pool:[...pool].sort((a,b)=>nm(a).localeCompare(nm(b))),method:null,tm:{},glass:null,gar:null,garOpts:shuffle([r.gar,...pickN(gars,3)]),peek:false,no:String(Math.floor(Math.random()*900)+100),table:Math.floor(Math.random()*24)+1};
   P=null;render();$('#main').scrollTop=0;
 }
-const ZONE={shake:[10,15,25,4],stir:[20,30,45,6]};
+/* gauge: [good from, good to, max, units per second, start value] */
+const GZ={shake:[10,15,25,4,0],stir:[20,30,45,6,0],shot:[25,30,45,6,0],steam:[55,65,80,12,5]};
+const HOLD={shake:['Hold to shake','Shaking…','Let go when it has had long enough. The clock runs fast.'],stir:['Hold to stir','Stirring…','Let go when it has had long enough. The clock runs fast.'],
+  shot:['Hold to pull the shot','Pulling…','Let go to stop the shot. The clock runs fast.'],steam:['Hold to steam','Steaming…','Let go when the milk is hot enough. It starts fridge-cold.']};
+const TMSG={shake:['Cold and properly diluted.','This one is under-diluted: warm and harsh.','This one is over-diluted: watery.'],stir:['Cold and properly diluted.','This one is under-diluted: warm and harsh.','This one is over-diluted: watery.'],
+  shot:['A balanced shot.','Under-extracted: sour and thin.','Over-extracted: bitter and harsh.'],steam:['Sweet, and hot enough to drink straight away.','Lukewarm.','Too hot. Scalded milk loses its sweetness.']};
+const gval=(key,v)=>key==='steam'&&S.unit==='oz'?Math.round(v*9/5+32):Math.round(v);
+function gauge(key){
+  const z=GZ[key],v=B.tm[key]||0,w=x=>(x-z[4])/(z[2]-z[4])*100;
+  return `<div class="secs"><span id="gs-${key}">${gval(key,v||z[4])}</span> <small>${key==='steam'?(S.unit==='oz'?'°F':'°C'):'seconds'}</small></div>
+  <div class="gauge">${B.peek?`<span class="zone" style="left:${w(z[0])}%;width:${w(z[1])-w(z[0])}%"></span>`:''}<span class="fill" id="gf-${key}" style="width:${v?w(v):0}%"></span></div>
+  <button class="btn hold" data-g="${key}">${v?'Hold to go again':HOLD[key][0]}</button><p class="small muted" style="text-align:center">${HOLD[key][2]}</p>`;
+}
 function ticket(){const r=B.r;return `<div class="ticket"><div class="tk-h"><span>TABLE ${B.table}</span><span>CHECK #${B.no}</span></div><div class="tk-n">1 × ${r.n}</div>
   ${B.step===3||B.peek?`<div class="tk-s">${specLine(r)}<br>${METHOD[r.m].toUpperCase()} · ${GLASS[r.g].toUpperCase()} · ${r.gar.toUpperCase()}</div>`:`<button data-a="peek">Show me the spec (practice round)</button>`}</div>`}
 function renderBuild(top,main,foot){
-  const r=B.r;
-  top.innerHTML=`<button class="x" data-a="quit" aria-label="Close">✕</button><div class="steps">${['Pour','Mix','Serve'].map((s,i)=>`<span class="${i===B.step?'cur':''}">${i+1} ${s}</span>`).join('')}</div>`;
+  const r=B.r,co=r.track==='coffee';
+  top.innerHTML=`<button class="x" data-a="quit" aria-label="Close">✕</button><div class="steps">${(co?['Recipe','Make','Serve']:['Pour','Mix','Serve']).map((s,i)=>`<span class="${i===B.step?'cur':''}">${i+1} ${s}</span>`).join('')}</div>`;
   if(B.step===0){
-    main.innerHTML=ticket()+`<div class="stack"><h2>What goes in?</h2><p class="small muted">Tap a bottle to add it, then set the pour. Tap its name again to take it out.</p><div class="chips">${B.pool.map(id=>{const on=B.picks[id]!=null,u=unitOf(id);
+    main.innerHTML=ticket()+`<div class="stack"><h2>${co?'What goes in the cup?':'What goes in?'}</h2><p class="small muted">Tap ${co?'an ingredient':'a bottle'} to add it, then set the amount. Tap its name again to take it out.</p><div class="chips">${B.pool.map(id=>{const on=B.picks[id]!=null,u=unitOf(id);
       return `<div class="chip ${on?'on':''}"><button class="chip-h" data-a="ing" data-id="${id}" aria-pressed="${on}"><span>${nm(id)}</span><span class="tick">${on?'✓':'+'}</span></button>${on?`<div class="stepper">${u==='top'?'<output class="only grow">top up</output>':u==='add'?'<output class="only grow">added</output>':`<button data-a="dec" data-id="${id}" aria-label="Less ${nm(id)}">−</button><output>${amt([id,B.picks[id]])}</output><button data-a="inc" data-id="${id}" aria-label="More ${nm(id)}">+</button>`}</div>`:''}</div>`}).join('')}</div></div>`;
-    foot.innerHTML=`<button class="btn" data-a="bnext" ${Object.keys(B.picks).length?'':'disabled'}>Next: mix it</button>`;
+    foot.innerHTML=`<button class="btn" data-a="bnext" ${Object.keys(B.picks).length?'':'disabled'}>Next: ${co?'make':'mix'} it</button>`;
   }else if(B.step===1){
-    const z=ZONE[B.method];
-    main.innerHTML=ticket()+`<div class="stack"><h2>How do you mix it?</h2><div class="methods">${[['shake','Shake','Hard, in the tins'],['stir','Stir','In a mixing glass'],['build','Build','Straight in the glass']].map(m=>`<button class="method ${B.method===m[0]?'on':''}" data-a="method" data-id="${m[0]}" aria-pressed="${B.method===m[0]}"><b>${m[1]}</b><span>${m[2]}</span></button>`).join('')}</div></div>
-    ${z?`<div class="stack"><div class="secs"><span id="gsec">${B.t?Math.round(B.t):0}</span> <small>seconds</small></div><div class="gauge">${B.peek?`<span class="zone" style="left:${z[0]/z[2]*100}%;width:${(z[1]-z[0])/z[2]*100}%"></span>`:''}<span class="fill" id="gfill" style="width:${B.t/z[2]*100}%"></span></div>
-    <button class="btn" id="hold">${B.t?'Hold to go again':'Hold to '+B.method}</button><p class="small muted" style="text-align:center">Let go when it has had long enough. The clock runs fast.</p></div>`:''}`;
-    foot.innerHTML=`<button class="btn" data-a="bnext" ${B.method&&(B.method==='build'||B.t)?'':'disabled'}>Next: serve it</button>`;
-    if(z)wireHold(z);
+    const cards=co?[['none','None','No steamed milk'],['thin','Silky','Thin microfoam'],['thick','Foamy','Thick, airy foam']]:[['shake','Shake','Hard, in the tins'],['stir','Stir','In a mixing glass'],['build','Build','Straight in the glass']];
+    const methods=`<div class="methods">${cards.map(m=>`<button class="method ${B.method===m[0]?'on':''}" data-a="method" data-id="${m[0]}" aria-pressed="${B.method===m[0]}"><b>${m[1]}</b><span>${m[2]}</span></button>`).join('')}</div>`;
+    let ready;
+    if(co){
+      const hasShot=B.picks.shot!=null,steams=B.method&&B.method!=='none';
+      main.innerHTML=ticket()+(hasShot?`<div class="stack"><h2>Pull the shot</h2>${gauge('shot')}</div>`:'')+`<div class="stack"><h2>How do you steam the milk?</h2>${methods}</div>`+(steams?`<div class="stack">${gauge('steam')}</div>`:'');
+      ready=B.method&&(!hasShot||B.tm.shot)&&(!steams||B.tm.steam);
+    }else{
+      const g=GZ[B.method];
+      main.innerHTML=ticket()+`<div class="stack"><h2>How do you mix it?</h2>${methods}</div>`+(g?`<div class="stack">${gauge(B.method)}</div>`:'');
+      ready=B.method&&(B.method==='build'||B.tm[B.method]);
+    }
+    foot.innerHTML=`<button class="btn" data-a="bnext" ${ready?'':'disabled'}>Next: serve it</button>`;
+    document.querySelectorAll('.hold').forEach(wireHold);
   }else if(B.step===2){
-    main.innerHTML=ticket()+`<div class="stack"><h2>Which glass?</h2><div class="glasses">${Object.keys(GLASS).map(g=>`<button class="glass ${B.glass===g?'on':''}" data-a="glass" data-id="${g}" aria-pressed="${B.glass===g}">${gsvg(g)}${GLASS[g]}</button>`).join('')}</div></div>
-    <div class="stack"><h2>Garnish</h2><div class="garn">${B.garOpts.map((g,i)=>`<button class="${B.gar===g?'on':''}" data-a="gar" data-id="${i}" aria-pressed="${B.gar===g}">${g}</button>`).join('')}</div></div>`;
+    main.innerHTML=ticket()+`<div class="stack"><h2>${co?'Which cup?':'Which glass?'}</h2><div class="glasses">${GLS[r.track].map(g=>`<button class="glass ${B.glass===g?'on':''}" data-a="glass" data-id="${g}" aria-pressed="${B.glass===g}">${gsvg(g)}${GLASS[g]}</button>`).join('')}</div></div>
+    <div class="stack"><h2>${co?'Finishing touch':'Garnish'}</h2><div class="garn">${B.garOpts.map((g,i)=>`<button class="${B.gar===g?'on':''}" data-a="gar" data-id="${i}" aria-pressed="${B.gar===g}">${g}</button>`).join('')}</div></div>`;
     foot.innerHTML=`<button class="btn" data-a="serve" ${B.glass&&B.gar?'':'disabled'}>Serve it</button>`;
   }else{
     const s=B.res;
     main.innerHTML=`<div class="card"><div class="score"><b>${s.score}</b><span class="stack" style="gap:2px"><span class="stars" aria-label="${starsFor(s.score)} of 3 stars">${stars(starsFor(s.score))}</span><span class="small muted">out of 100 · +${s.xp} XP</span></span></div>
-    <p class="quote">${s.score>=90?'“That’s exactly how it should taste.”':s.score>=70?'“Good drink. Something is slightly off, though.”':s.score>=50?'“It’s fine. I’ll finish it.”':'“Could I just get a beer instead?”'}</p>
+    <p class="quote">${s.score>=90?'“That’s exactly how it should taste.”':s.score>=70?'“Good drink. Something is slightly off, though.”':s.score>=50?'“It’s fine. I’ll finish it.”':co?'“Could I just get a tea instead?”':'“Could I just get a beer instead?”'}</p>
     ${B.peek?'<p class="small muted">Practice round: the spec was showing, so this one earns half XP and no stars.</p>':''}
     <ul class="marks">${s.rows.map(x=>`<li class="${x[0]}"><span class="m">${x[0]==='ok'?'✓':x[0]==='no'?'✕':'~'}</span><span>${x[1]}</span></li>`).join('')}</ul></div>${ticket()}<p class="small muted">${r.note}</p>`;
     foot.innerHTML=`<div class="stack"><button class="btn" data-a="random">Next ticket</button><div class="row"><button class="btn ghost" data-a="order" data-id="${r.id}">Make it again</button><button class="btn ghost" data-a="quit">Done</button></div></div>`;
   }
 }
-function wireHold(z){
-  const b=$('#hold');let raf=0,t0=0;
+function wireHold(b){
+  const key=b.dataset.g,z=GZ[key];let raf=0,t0=0;
   const stop=()=>{if(!raf)return;cancelAnimationFrame(raf);raf=0;render()};
-  const tick=()=>{B.t=Math.min(z[2],(performance.now()-t0)/1000*z[3]);$('#gsec').textContent=Math.round(B.t);$('#gfill').style.width=(B.t/z[2]*100)+'%';if(B.t>=z[2]){stop();return}raf=requestAnimationFrame(tick)};
-  const start=e=>{e.preventDefault();if(raf)return;B.t=0;t0=performance.now();b.classList.add('live');b.textContent=B.method==='shake'?'Shaking…':'Stirring…';raf=requestAnimationFrame(tick)};
+  const tick=()=>{const v=Math.min(z[2],z[4]+(performance.now()-t0)/1000*z[3]);B.tm[key]=v;$('#gs-'+key).textContent=gval(key,v);$('#gf-'+key).style.width=((v-z[4])/(z[2]-z[4])*100)+'%';if(v>=z[2]){stop();return}raf=requestAnimationFrame(tick)};
+  const start=e=>{e.preventDefault();if(raf)return;t0=performance.now();b.classList.add('live');b.textContent=HOLD[key][1];raf=requestAnimationFrame(tick)};
   b.addEventListener('pointerdown',e=>{try{b.setPointerCapture(e.pointerId)}catch(_){}start(e)});
   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,stop));
   b.addEventListener('contextmenu',e=>e.preventDefault());
@@ -630,26 +790,34 @@ function wireHold(z){
   b.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')stop()});
 }
 const TASTE={base:['It will taste thin and weak.','It will taste hot and boozy.'],sour:['It will taste flat and too sweet.','It will taste sharp and puckering.'],sweet:['It will taste tart and thin.','It will taste syrupy.'],
-  bitter:['It loses its backbone.','The bitterness takes over.'],mod:['The base spirit will dominate.','It drowns out the base spirit.'],long:['',''],herb:['','']};
+  bitter:['It loses its backbone.','The bitterness takes over.'],mod:['The base spirit will dominate.','It drowns out the base spirit.'],long:['',''],herb:['',''],
+  coffee:['It will taste weak.','It will be stronger than the guest ordered.'],milk:['The coffee will overpower it, and the cup will look half empty.','It will taste weak and milky.'],
+  water:['It will be short and intense.','It will taste watery.'],flav:['You will barely taste it.','It will be too sweet.']};
+function timeRow(key,v,rows){
+  const z=GZ[key],t=Math.round(v),tol=key==='steam'?5:3,show=key==='steam'?Tm(t):t+' seconds',aim=key==='steam'?`${Tm(z[0])} to ${Tm(z[1])}`:`${z[0]} to ${z[1]} seconds`,M=TMSG[key];
+  if(t>=z[0]&&t<=z[1]){rows.push(['ok',`<b>${show}.</b> ${M[0]}`]);return 10}
+  const near=t>=z[0]-tol&&t<=z[1]+tol;rows.push([near?'half':'no',`<b>${show}.</b> Aim for ${aim}. ${t<z[0]?M[1]:M[2]}`]);return near?5:0;
+}
 function scoreBuild(){
-  const r=B.r,rows=[],per=50/r.ing.length;let ing=0;
+  const r=B.r,co=r.track==='coffee',rows=[],per=50/r.ing.length;let ing=0;
   r.ing.forEach(i=>{const id=i[0],u=i[2]||unitOf(id),p=B.picks[id];
     if(p==null){rows.push(['no',`<b>${nm(id)}</b> is missing.`]);return}
-    if(u!=='oz'&&u!=='dash'){ing+=per;rows.push(['ok',`<b>${nm(id)}</b>: in.`]);return}
-    const d=p-i[1],tol=u==='dash'?1:.25;
+    if(u==='top'||u==='add'){ing+=per;rows.push(['ok',`<b>${nm(id)}</b>: in.`]);return}
+    const d=p-i[1],tol=stepOf(id);
     if(d===0){ing+=per;rows.push(['ok',`<b>${nm(id)}</b>: ${amt(i)}, spot on.`])}
-    else{const close=Math.abs(d)<=tol;if(close)ing+=per/2;rows.push([close?'half':'no',`<b>${nm(id)}</b>: you poured ${amt([id,p])}, the spec is ${amt(i)}. ${TASTE[ING[id][1]][d<0?0:1]}`])}});
+    else{const close=Math.abs(d)<=tol;if(close)ing+=per/2;rows.push([close?'half':'no',`<b>${nm(id)}</b>: you ${co?'used':'poured'} ${amt([id,p])}, the spec is ${amt(i)}. ${TASTE[ING[id][1]][d<0?0:1]}`])}});
   Object.keys(B.picks).forEach(id=>{if(!r.ing.some(i=>i[0]===id)){ing-=8;rows.push(['no',`<b>${nm(id)}</b> does not belong in this drink.`])}});
-  ing=Math.max(0,ing);
-  const mOk=B.method===r.m;let m=mOk?20:0,tm=0;
-  rows.push([mOk?'ok':'no',`<b>${METHOD[r.m]}.</b> ${methodWhy(r)}`]);
-  if(mOk){if(r.m==='build')tm=10;else{const z=ZONE[r.m],t=Math.round(B.t);
-    if(t>=z[0]&&t<=z[1]){tm=10;rows.push(['ok',`<b>${t} seconds.</b> Cold and properly diluted.`])}
-    else{const near=t>=z[0]-3&&t<=z[1]+3;if(near)tm=5;rows.push([near?'half':'no',`<b>${t} seconds.</b> Aim for ${z[0]} to ${z[1]}. ${t<z[0]?'This one is under-diluted: warm and harsh.':'This one is over-diluted: watery.'}`])}}}
-  const gOk=B.glass===r.g,aOk=B.gar===r.gar;
-  rows.push([gOk?'ok':'no',`<b>${GLASS[r.g]}.</b> ${GUSE[r.g]} Ice: ${ICE[r.ice].toLowerCase()}`]);
-  rows.push([aOk?'ok':'no',`<b>Garnish:</b> ${r.gar.toLowerCase()}.`]);
-  const score=Math.round(ing+m+tm+(gOk?10:0)+(aOk?10:0));
+  let got=Math.max(0,ing),max=50;
+  const mOk=B.method===r.m,mw=co?15:20;max+=mw;if(mOk)got+=mw;
+  rows.push([mOk?'ok':'no',`<b>${co?'Milk: '+METHOD[r.m].toLowerCase():METHOD[r.m]}.</b> ${methodWhy(r)}`]);
+  if(co){
+    if(r.ing.some(i=>i[0]==='shot')){max+=10;if(B.tm.shot)got+=timeRow('shot',B.tm.shot,rows)}
+    if(r.m!=='none'){max+=10;if(mOk)got+=timeRow('steam',B.tm.steam,rows)}
+  }else{max+=10;if(mOk)got+=r.m==='build'?10:timeRow(r.m,B.tm[r.m],rows)}
+  const gOk=B.glass===r.g,aOk=B.gar===r.gar,aw=co?5:10;max+=10+aw;got+=(gOk?10:0)+(aOk?aw:0);
+  rows.push([gOk?'ok':'no',`<b>${GLASS[r.g]}.</b> ${GUSE[r.g]}${co?'':' Ice: '+ICE[r.ice].toLowerCase()}`]);
+  rows.push([aOk?'ok':'no',`<b>${co?'Finish':'Garnish'}:</b> ${r.gar.toLowerCase()}.`]);
+  const score=Math.round(got/max*100);
   const xp=Math.round(score/5*(B.peek?.5:1));
   if(!B.peek)S.builds[r.id]=Math.max(S.builds[r.id]||0,score);
   gain(xp);B.res={score,rows,xp};
@@ -657,22 +825,24 @@ function scoreBuild(){
 
 /* ---------- Specs ---------- */
 function vSpecs(){
-  return `<section class="stack"><p class="eyebrow">Spec book</p><h1>${R.length} classics</h1>
+  const co=S.track==='coffee';
+  return `<section class="stack"><p class="eyebrow">Spec book</p><h1>${TR().length} ${co?'café drinks':'classics'}</h1>
   <input class="search" id="spec-search" type="search" placeholder="Search drinks or ingredients" value="${F.q.replace(/"/g,'&quot;')}" aria-label="Search drinks or ingredients">
-  <div class="filters">${[['all','All'],...Object.entries(FAM)].map(f=>`<button class="${F.fam===f[0]?'on':''}" data-a="fam" data-id="${f[0]}" aria-pressed="${F.fam===f[0]}">${f[1]}</button>`).join('')}</div></section><section id="speclist"></section>`;
+  <div class="filters">${[['all','All'],...FAMS[S.track].map(f=>[f,FAM[f]])].map(f=>`<button class="${F.fam===f[0]?'on':''}" data-a="fam" data-id="${f[0]}" aria-pressed="${F.fam===f[0]}">${f[1]}</button>`).join('')}</div></section><section id="speclist"></section>`;
 }
 function specList(){
-  const q=F.q.trim().toLowerCase();
-  const list=R.filter(r=>(F.fam==='all'||r.fam===F.fam)&&(!q||r.n.toLowerCase().includes(q)||r.ing.some(i=>nm(i[0]).toLowerCase().includes(q))));
-  $('#speclist').innerHTML=list.length?list.map(r=>`<details class="spec"><summary><span class="grow"><b>${r.n}</b><br><span class="tag">${FAM[r.fam]} · ${METHOD[r.m].split(' ')[0]}</span></span><span class="chev" aria-hidden="true">›</span></summary>
-   <div class="spec-body">${recipeRatio(r)}${legend(r)}<dl class="meta"><dt>Method</dt><dd>${methodWhy(r)}</dd><dt>Glass</dt><dd>${GLASS[r.g]}</dd><dt>Ice</dt><dd>${ICE[r.ice]}</dd><dt>Garnish</dt><dd>${r.gar}</dd></dl><p class="small muted">${r.note}</p><button class="btn sm ghost" data-a="order" data-id="${r.id}">Build this from memory</button></div></details>`).join('')
-   :`<p class="muted">No drink matches “${F.q.replace(/</g,'&lt;')}”. Try a spirit, like gin or rum.</p>`;
+  const q=F.q.trim().toLowerCase(),co=S.track==='coffee';
+  const list=TR().filter(r=>(F.fam==='all'||r.fam===F.fam)&&(!q||r.n.toLowerCase().includes(q)||r.ing.some(i=>nm(i[0]).toLowerCase().includes(q))));
+  $('#speclist').innerHTML=list.length?list.map(r=>`<details class="spec"><summary><span class="grow"><b>${r.n}</b><br><span class="tag">${FAM[r.fam]} · ${co?METHOD[r.m]:METHOD[r.m].split(' ')[0]}</span></span><span class="chev" aria-hidden="true">›</span></summary>
+   <div class="spec-body">${recipeRatio(r)}${legend(r)}<dl class="meta"><dt>${co?'Milk':'Method'}</dt><dd>${co?METHOD[r.m]+'. ':''}${methodWhy(r)}</dd><dt>${co?'Cup':'Glass'}</dt><dd>${GLASS[r.g]}</dd>${co?'':`<dt>Ice</dt><dd>${ICE[r.ice]}</dd>`}<dt>${co?'Finish':'Garnish'}</dt><dd>${r.gar}</dd></dl><p class="small muted">${r.note}</p><button class="btn sm ghost" data-a="order" data-id="${r.id}">Make this from memory</button></div></details>`).join('')
+   :`<p class="muted">No drink matches “${F.q.replace(/</g,'&lt;')}”. Try an ingredient, like ${co?'milk or chocolate':'gin or rum'}.</p>`;
 }
 
 /* ---------- events ---------- */
 const ACT={
   tab:d=>{tab=d.id;resetArmed=false;try{history.replaceState(null,'','#'+tab)}catch(e){location.hash=tab}render();$('#main').scrollTop=0},
   unit:()=>{S.unit=S.unit==='oz'?'ml':'oz';save();render()},
+  track:d=>{S.track=d.id;F={q:'',fam:'all'};resetArmed=false;save();render()},
   lesson:d=>{startLesson(d.id);$('#main').scrollTop=0},
   drill:()=>{startDrill();$('#main').scrollTop=0},
   quit:()=>{P=null;B=null;render();$('#main').scrollTop=0},
@@ -681,20 +851,20 @@ const ACT={
   seq:d=>{P.seq.push(+d.id);render()},
   unseq:d=>{P.seq=P.seq.filter(i=>i!==+d.id);render()},
   checkseq:()=>{answer(P.seq.every((v,i)=>v===i))},
-  random:()=>{const pool=R.filter(r=>!B||r.id!==B.r.id),un=pool.filter(r=>S.builds[r.id]==null);const src=un.length&&Math.random()<.6?un:pool;startBuild(src[Math.floor(Math.random()*src.length)].id)},
+  random:()=>{const pool=TR().filter(r=>!B||r.id!==B.r.id),un=pool.filter(r=>S.builds[r.id]==null);const src=un.length&&Math.random()<.6?un:pool;startBuild(src[Math.floor(Math.random()*src.length)].id)},
   order:d=>startBuild(d.id),
   peek:()=>{B.peek=true;render()},
-  ing:d=>{const id=d.id;if(B.picks[id]!=null)delete B.picks[id];else B.picks[id]=unitOf(id)==='dash'?1:1;render()},
-  inc:d=>{const u=unitOf(d.id);B.picks[d.id]=Math.min(u==='dash'?6:4,B.picks[d.id]+(u==='dash'?1:.25));render()},
-  dec:d=>{const u=unitOf(d.id);B.picks[d.id]=Math.max(u==='dash'?1:.25,B.picks[d.id]-(u==='dash'?1:.25));render()},
-  method:d=>{B.method=d.id;B.t=0;render()},
+  ing:d=>{const id=d.id;if(B.picks[id]!=null)delete B.picks[id];else B.picks[id]=startOf(id);render()},
+  inc:d=>{B.picks[d.id]=Math.min(maxOf(d.id),B.picks[d.id]+stepOf(d.id));render()},
+  dec:d=>{B.picks[d.id]=Math.max(stepOf(d.id),B.picks[d.id]-stepOf(d.id));render()},
+  method:d=>{B.method=d.id;if(B.r.track==='coffee')delete B.tm.steam;else B.tm={};render()},
   glass:d=>{B.glass=d.id;render()},
   gar:d=>{B.gar=B.garOpts[+d.id];render()},
   bnext:()=>{B.step++;render();$('#main').scrollTop=0},
   serve:()=>{scoreBuild();B.step=3;render();$('#main').scrollTop=0},
   fam:d=>{F.fam=d.id;render()},
   reset:()=>{resetArmed=true;render()},
-  reset2:()=>{S={xp:0,streak:{d:'',n:0},lessons:{},cards:{},builds:{},unit:S.unit};resetArmed=false;save();render()}
+  reset2:()=>{S={xp:0,streak:{d:'',n:0},lessons:{},cards:{},builds:{},unit:S.unit,track:S.track};resetArmed=false;save();render()}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;ACT[el.dataset.a](el.dataset)});
 document.addEventListener('input',e=>{if(e.target.id==='spec-search'){F.q=e.target.value;specList()}});
