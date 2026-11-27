@@ -311,7 +311,32 @@ const KEY='barschool.v1';
 let S={xp:0,streak:{d:'',n:0},lessons:{},cards:{},builds:{},unit:null,track:'bar'};
 try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 if(!S.unit)S.unit=/^en-US/i.test(navigator.language||'')?'oz':'ml';
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+/* Progress lives in the viewer's private account storage (db). localStorage is only a fast local copy. */
+let cloud=null,sync='local',pushT=0,writing=false,dirty=false;
+function push(){
+  if(!cloud)return;dirty=true;if(writing)return;writing=true;
+  (async()=>{while(dirty){dirty=false;try{await cloud.set({json:JSON.stringify(S),at:Date.now()});sync='saved'}catch(e){sync='error';break}}writing=false;syncNote()})();
+}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(cloud){clearTimeout(pushT);pushT=setTimeout(push,600)}};
+const SYNC={saved:'Progress is saved to your Claude account.',local:'Progress is saved on this device only.',error:'Could not save your progress just now. It will try again after your next answer.',loading:'Loading your saved progress…'};
+function syncNote(){const el=document.getElementById('sync');if(el)el.textContent=SYNC[sync]}
+async function loadCloud(){
+  if(!(window.claude&&window.claude.use))return;
+  sync='loading';syncNote();
+  try{
+    const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+    const id=db&&user?await user.id():null;
+    if(!id){sync='local';syncNote();return}
+    const ref=db.doc('data/users/'+id+'/progress');
+    const snap=await Promise.race([ref.get(),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),10000))]);
+    let remote=null;
+    if(snap.exists){try{remote=JSON.parse(snap.data().json)}catch(e){}}
+    cloud=ref;sync='saved';
+    if(remote&&(remote.xp||0)>=(S.xp||0)){S=Object.assign({xp:0,streak:{d:'',n:0},lessons:{},cards:{},builds:{},unit:S.unit,track:'bar'},remote);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+    else if(S.xp)push();
+    if(!P&&!B)render();else syncNote();
+  }catch(e){sync='local';syncNote()}
+}
 const dayStr=t=>{const d=new Date(t);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 const DAY=864e5;
 function streak(){const t=dayStr(Date.now()),y=dayStr(Date.now()-DAY);return (S.streak.d===t||S.streak.d===y)?S.streak.n:0}
@@ -631,6 +656,7 @@ function vLearn(){
    :`<p class="eyebrow">Course complete</p><h1>Now keep it sharp</h1><p class="lead">${ds.due} cards are due for review. Then go make a few drinks from memory.</p><button class="btn" data-a="drill">Start a drill</button>`;
   return `<section class="hero">${hero}<div class="stack" style="gap:8px"><div class="lvl"><span>${lv.name}</span><span>${S.xp} XP${lv.next?' · '+lv.next[1]+' at '+lv.next[0]:''}</span></div><div class="prog"><i style="width:${lv.pct}%"></i></div></div></section>
   <section class="stack"><h2>The ${S.track==='coffee'?'coffee':'cocktail'} course</h2><ol class="path">${ls.map((l,k)=>`<li class="${S.lessons[l.id]?'done':nx&&nx.id===l.id?'next':''}"><button data-a="lesson" data-id="${l.id}"><span class="num">${S.lessons[l.id]?'✓':k+1}</span><span class="grow"><span class="t">${l.title}</span><br><span class="small muted">${l.sub}</span></span><span class="chev" aria-hidden="true">›</span></button></li>`).join('')}</ol></section>
+  <p class="small muted" id="sync" style="text-align:center">${SYNC[sync]}</p>
   <button class="link" data-a="${resetArmed?'reset2':'reset'}">${resetArmed?'Tap again to erase all progress':'Reset progress'}</button>`;
 }
 
@@ -871,4 +897,5 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!
 document.addEventListener('input',e=>{if(e.target.id==='spec-search'){F.q=e.target.value;specList()}});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(!P&&!B&&ACT&&['learn','drill','build','specs'].includes(h)&&h!==tab){tab=h;render()}});
 render();
+loadCloud();
 </script>
